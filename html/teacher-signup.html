@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/ss-logo-icon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchool – Teacher Signup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/teacher-signup.css">
+  <style>
+    .field-group .styled-select { width: 100%; }
+    .code-input { letter-spacing: 4px; font-weight: 700; font-size: 15px; text-transform: uppercase; }
+    .school-hint { font-size: 11px; color: #6b7494; margin-top: 5px; }
+    #schoolCodeStatus { font-size: 12px; margin-top: 6px; min-height: 16px; display: none; }
+  </style>
+</head>
+<body>
+<div class="signup-page">
+  <div class="signup-card">
+
+    <div class="signup-logo">
+      <div class="logo-icon" style="padding:0;overflow:hidden;background:none;"><img src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;"></div>
+      <span>SmartSchool</span>
+    </div>
+    <h2>Teacher Registration</h2>
+    <p class="signup-sub">Set up your teacher account</p>
+
+    <div class="steps">
+      <div class="step active" id="dot1"><span>1</span><label>Personal</label></div>
+      <div class="step-line"></div>
+      <div class="step" id="dot2"><span>2</span><label>School</label></div>
+      <div class="step-line"></div>
+      <div class="step" id="dot3"><span>3</span><label>Security</label></div>
+    </div>
+
+    <div id="signupError" class="error-msg"></div>
+
+    <!-- STEP 1 -->
+    <div class="form-step active" id="step1">
+      <div class="field-group">
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="e.g. Adebayo Johnson">
+      </div>
+      <div class="field-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="your@email.com">
+      </div>
+      <div class="field-group">
+        <label>Select Your School</label>
+        <select id="schoolSelect" class="styled-select">
+          <option value="">Loading schools...</option>
+        </select>
+        <p class="school-hint">Only schools registered on SmartSchool appear here.</p>
+      </div>
+      <div class="field-group">
+        <label>School Admin Code <span class="hint">(get this from your principal)</span></label>
+        <input type="text" id="adminCode" class="code-input" placeholder="e.g. XK7T2M" maxlength="6">
+        <p id="schoolCodeStatus"></p>
+      </div>
+      <div class="field-group">
+        <label>Teacher Role</label>
+        <div class="role-cards">
+          <div class="role-card" data-role="subject">
+            <div class="role-icon">📚</div>
+            <strong>Subject Teacher</strong>
+            <p>Teach subjects across classes. Enter scores and submit to class teachers.</p>
+          </div>
+          <div class="role-card" data-role="both">
+            <div class="role-icon">🏫</div>
+            <strong>Class Teacher</strong>
+            <p>Teach subjects AND own a class. Collate results and generate report cards.</p>
+          </div>
+        </div>
+        <input type="hidden" id="teacherRole">
+      </div>
+      <button class="btn-primary" id="toStep2Btn">Continue →</button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="form-step" id="step2">
+      <div id="mainClassSection" style="display:none">
+        <div class="field-group">
+          <label>Your Main Class <span class="hint">(the class you're form teacher of)</span></label>
+          <div class="arm-row">
+            <select id="mainClassLevel" class="styled-select">
+              <option value="">Level</option>
+              <optgroup label="Junior Secondary">
+                <option>JSS1</option><option>JSS2</option><option>JSS3</option>
+              </optgroup>
+              <optgroup label="Senior Secondary">
+                <option>SS1</option><option>SS2</option><option>SS3</option>
+              </optgroup>
+            </select>
+            <select id="mainClassArm" class="styled-select arm-select">
+              <option value="">Arm</option>
+              <option>A</option><option>B</option><option>C</option>
+              <option>D</option><option>E</option><option>F</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="subjectsSection" style="display:none">
+        <div class="field-group">
+          <label>Subjects You Teach</label>
+          <div class="checkbox-grid" id="subjectsGrid">
+            <label class="cb-item"><input type="checkbox" value="Mathematics"> Mathematics</label>
+            <label class="cb-item"><input type="checkbox" value="English Language"> English Language</label>
+            <label class="cb-item"><input type="checkbox" value="Physics"> Physics</label>
+            <label class="cb-item"><input type="checkbox" value="Chemistry"> Chemistry</label>
+            <label class="cb-item"><input type="checkbox" value="Biology"> Biology</label>
+            <label class="cb-item"><input type="checkbox" value="Economics"> Economics</label>
+            <label class="cb-item"><input type="checkbox" value="Government"> Government</label>
+            <label class="cb-item"><input type="checkbox" value="Civic Education"> Civic Education</label>
+            <label class="cb-item"><input type="checkbox" value="Agricultural Science"> Agricultural Science</label>
+            <label class="cb-item"><input type="checkbox" value="Computer Science"> Computer Science</label>
+            <label class="cb-item"><input type="checkbox" value="Further Mathematics"> Further Mathematics</label>
+            <label class="cb-item"><input type="checkbox" value="Geography"> Geography</label>
+            <label class="cb-item"><input type="checkbox" value="History"> History</label>
+            <label class="cb-item"><input type="checkbox" value="Literature in English"> Literature in English</label>
+            <label class="cb-item"><input type="checkbox" value="Yoruba"> Yoruba</label>
+            <label class="cb-item"><input type="checkbox" value="Igbo"> Igbo</label>
+            <label class="cb-item"><input type="checkbox" value="Hausa"> Hausa</label>
+            <label class="cb-item"><input type="checkbox" value="Fine Art"> Fine Art</label>
+            <label class="cb-item"><input type="checkbox" value="Music"> Music</label>
+            <label class="cb-item"><input type="checkbox" value="Physical Education"> Physical Education</label>
+            <label class="cb-item"><input type="checkbox" value="Social Studies"> Social Studies</label>
+            <label class="cb-item"><input type="checkbox" value="Basic Science"> Basic Science</label>
+            <label class="cb-item"><input type="checkbox" value="Basic Technology"> Basic Technology</label>
+            <label class="cb-item"><input type="checkbox" value="Home Economics"> Home Economics</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="classesTeachingSection" style="display:none">
+        <div class="field-group">
+          <label>Classes You Teach <span class="hint">(select all that apply)</span></label>
+          <div class="classes-builder" id="classesBuilder">
+            <div class="class-builder-row">
+              <select class="styled-select class-level-pick">
+                <option value="">Level</option>
+                <optgroup label="Junior Secondary">
+                  <option>JSS1</option><option>JSS2</option><option>JSS3</option>
+                </optgroup>
+                <optgroup label="Senior Secondary">
+                  <option>SS1</option><option>SS2</option><option>SS3</option>
+                </optgroup>
+              </select>
+              <div class="arms-checkboxes">
+                <label><input type="checkbox" value="A"> A</label>
+                <label><input type="checkbox" value="B"> B</label>
+                <label><input type="checkbox" value="C"> C</label>
+                <label><input type="checkbox" value="D"> D</label>
+                <label><input type="checkbox" value="E"> E</label>
+                <label><input type="checkbox" value="F"> F</label>
+              </div>
+              <button class="remove-row-btn" onclick="this.closest('.class-builder-row').remove()">✕</button>
+            </div>
+          </div>
+          <button class="add-class-btn" id="addClassRowBtn">+ Add Another Class</button>
+        </div>
+      </div>
+
+      <div class="step-btns">
+        <button class="btn-secondary" id="backToStep1Btn">← Back</button>
+        <button class="btn-primary" id="toStep3Btn">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="form-step" id="step3">
+      <div class="field-group">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="password" placeholder="Min. 6 characters">
+          <span class="pw-toggle" id="toggle1">👁</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="confirmPassword" placeholder="Repeat password">
+          <span class="pw-toggle" id="toggle2">👁</span>
+        </div>
+      </div>
+      <div class="summary-box" id="summaryBox">
+        <h4>📋 Account Summary</h4>
+        <div id="summaryContent"></div>
+      </div>
+      <div class="step-btns">
+        <button class="btn-secondary" id="backToStep2Btn">← Back</button>
+        <button class="btn-primary" id="signupBtn">Create Account</button>
+      </div>
+      <p id="loadingMsg" class="loading-msg" style="display:none">⏳ Creating your account...</p>
+    </div>
+
+    <p class="login-link">Already have an account? <a href="teacher-login.html">Login</a></p>
+    <div id="successAlert" class="success-alert" style="display:none">✅ Account created! Redirecting to login...</div>
+
+  </div>
+</div>
+<script type="module" src="../js/teacher-signup.js"></script>
+</body>
+</html>

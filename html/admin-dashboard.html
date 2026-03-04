@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/ss-logo-icon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchool – Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/teacher-dashboard.css">
+  <link rel="stylesheet" href="../css/admin-dashboard.css">
+</head>
+<body>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sidebar" id="sidebar">
+
+  <!-- School logo + name -->
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sb-school-logo" id="sbLogoMark">
+        <img id="sbLogoImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;">
+        <img id="sbLogoFallback" src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;border-radius:8px;display:block;">
+      </div>
+      <span class="logo-text" id="sbSchoolName">SmartSchool</span>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+  </div>
+
+  <!-- Principal profile -->
+  <div class="sidebar-profile">
+    <div class="sb-avatar-wrap">
+      <img id="sbProfileImg"
+           src="https://api.dicebear.com/7.x/initials/svg?seed=Admin&backgroundColor=1e2535&fontFamily=Arial"
+           alt="Avatar">
+      <span class="sb-online-dot"></span>
+    </div>
+    <div class="sb-profile-info">
+      <span class="sb-name" id="sbName">Principal</span>
+      <span class="sb-role" id="sbRole">👑 Admin</span>
+    </div>
+  </div>
+
+  <ul class="sidebar-nav">
+    <li class="nav-item active" data-section="sec-overview">
+      <span class="nav-icon">🏠</span><span class="nav-label">Overview</span>
+    </li>
+    <li class="nav-item" data-section="sec-teachers">
+      <span class="nav-icon">👨‍🏫</span><span class="nav-label">Teachers</span>
+    </li>
+    <li class="nav-item" data-section="sec-students">
+      <span class="nav-icon">🎓</span><span class="nav-label">Students</span>
+    </li>
+    <li class="nav-item" data-section="sec-results">
+      <span class="nav-icon">📊</span><span class="nav-label">Results</span>
+    </li>
+    <li class="nav-item" data-section="sec-settings">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <button id="logoutBtn" class="logout-btn">
+      <span class="nav-icon">🚪</span><span class="nav-label">Logout</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main-area" id="mainArea">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+
+    <div class="topbar-school">
+      <div class="topbar-school-logo" id="topbarLogoEl">
+        <img id="topbarLogoImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:6px;">
+        <img id="topbarLogoFallback" src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;">
+      </div>
+      <div>
+        <p class="topbar-school-name" id="schoolBannerName">School Name</p>
+        <p class="topbar-school-sub">Admin Portal</p>
+      </div>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <div class="topbar-right">
+      <span id="topbarDate" class="topbar-date"></span>
+      <div class="topbar-avatar">
+        <img id="topbarPrincipalImg"
+             src="https://api.dicebear.com/7.x/initials/svg?seed=Admin&backgroundColor=1e2535&fontFamily=Arial"
+             alt="Principal">
+        <span id="topbarPrincipalName">Principal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="sections-wrapper">
+
+    <!-- ═══ OVERVIEW ═══ -->
+    <section class="section active" id="sec-overview">
+      <div class="section-header">
+        <h2>Overview</h2>
+        <p id="welcomeMsg" class="section-sub"></p>
+      </div>
+
+      <div class="stats-grid" id="overviewStats">
+        <div class="stat-card">
+          <div class="stat-icon">👨‍🏫</div>
+          <div class="stat-info">
+            <p class="stat-title">Teachers</p>
+            <p class="stat-value" id="statTeachers">—</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎓</div>
+          <div class="stat-info">
+            <p class="stat-title">Students</p>
+            <p class="stat-value" id="statStudents">—</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <p class="stat-title">Assignments</p>
+            <p class="stat-value" id="statAssignments">—</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-info">
+            <p class="stat-title">Report Cards</p>
+            <p class="stat-value" id="statReports">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin code banner -->
+      <div class="admin-code-banner">
+        <div>
+          <p class="admin-code-label">🔑 School Admin Code</p>
+          <p class="admin-code-sub">Share with teachers during signup so they register under your school</p>
+        </div>
+        <div class="admin-code-right">
+          <span class="admin-code-val" id="adminCodeDisplay">——</span>
+          <button class="copy-code-btn" id="copyCodeBtn">📋 Copy</button>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      <div class="card" style="margin-top:20px">
+        <h3>Recent Activity</h3>
+        <div id="recentActivity"><p class="empty-msg">Loading...</p></div>
+      </div>
+    </section>
+
+    <!-- ═══ TEACHERS ═══ -->
+    <section class="section" id="sec-teachers">
+      <div class="section-header section-header--row">
+        <h2>Teachers</h2>
+        <input type="text" id="teacherSearch" class="modal-input search-input" placeholder="🔍 Search teachers...">
+      </div>
+      <div id="teachersList"><p class="empty-msg">Loading...</p></div>
+    </section>
+
+    <!-- ═══ STUDENTS ═══ -->
+    <section class="section" id="sec-students">
+      <div class="section-header section-header--row">
+        <h2>Students</h2>
+        <div class="header-controls">
+          <select id="studentClassFilter" class="styled-select">
+            <option value="">All Classes</option>
+          </select>
+          <input type="text" id="studentSearch" class="modal-input search-input" placeholder="🔍 Search students...">
+        </div>
+      </div>
+      <div id="studentsList"><p class="empty-msg">Loading...</p></div>
+    </section>
+
+    <!-- ═══ RESULTS ═══ -->
+    <section class="section" id="sec-results">
+      <div class="section-header">
+        <h2>Results Overview</h2>
+      </div>
+      <div class="filters-row">
+        <select id="resultsClassFilter" class="styled-select">
+          <option value="">All Classes</option>
+        </select>
+        <select id="resultsTermFilter" class="styled-select">
+          <option value="1st Term">1st Term</option>
+          <option value="2nd Term">2nd Term</option>
+          <option value="3rd Term">3rd Term</option>
+        </select>
+        <button class="action-btn" id="loadResultsBtn">Load Results</button>
+      </div>
+      <div id="resultsContainer"><p class="empty-msg">Select a class and term, then click Load Results.</p></div>
+    </section>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <section class="section" id="sec-settings">
+      <div class="section-header"><h2>School Settings</h2></div>
+
+      <div class="settings-grid">
+
+        <!-- School Identity card -->
+        <div class="card settings-card">
+          <h3>🏫 School Identity</h3>
+
+          <div class="field-group">
+            <label>School Logo</label>
+            <div class="logo-upload-area">
+              <div class="logo-upload-preview" id="logoUploadPreview">
+                <img id="logoPreviewImg" src="" alt=""
+                     style="display:none;width:100%;height:100%;object-fit:contain;border-radius:10px;">
+                <div id="logoUploadPlaceholder" class="logo-upload-placeholder">
+                  <span>🏫</span>
+                  <p>Upload school logo</p>
+                  <p class="upload-hint">PNG or JPG · Appears on all portals &amp; report cards</p>
+                </div>
+              </div>
+              <input type="file" id="logoFileInput" accept="image/*" style="display:none">
+              <div class="logo-upload-btns">
+                <button class="action-btn" id="uploadLogoBtn" style="font-size:13px;padding:8px 16px">📤 Upload</button>
+                <button class="cancel-btn" id="removeLogoBtn" style="font-size:13px;padding:8px 16px;display:none">🗑 Remove</button>
+              </div>
+              <p id="logoUploadStatus" style="font-size:11px;margin-top:6px;display:none"></p>
+            </div>
+          </div>
+
+          <div class="field-group" style="margin-top:16px">
+            <label>School Name</label>
+            <input type="text" id="settingsSchoolName" class="modal-input" placeholder="Enter school name">
+          </div>
+        </div>
+
+        <!-- Principal Profile card -->
+        <div class="card settings-card">
+          <h3>👤 Principal Profile</h3>
+
+          <div class="principal-photo-area">
+            <div class="principal-photo-wrap">
+              <img id="principalPhotoPreview"
+                   src="https://api.dicebear.com/7.x/initials/svg?seed=Admin&backgroundColor=1e2535&fontFamily=Arial"
+                   alt="Principal photo" class="principal-photo-img">
+              <button class="photo-change-btn" id="triggerPhotoUpload" title="Change photo">📷</button>
+            </div>
+            <input type="file" id="photoFileInput" accept="image/*" style="display:none">
+            <p id="photoUploadStatus" class="upload-status-text" style="display:none"></p>
+          </div>
+
+          <div class="field-group" style="margin-top:16px">
+            <label>Principal Name</label>
+            <input type="text" id="settingsPrincipalName" class="modal-input" placeholder="Your full name">
+          </div>
+          <div class="field-group" style="margin-top:12px">
+            <label>Principal Title</label>
+            <select id="settingsPrincipalTitle" class="styled-select" style="width:100%">
+              <option value="Principal">Principal</option>
+              <option value="Vice Principal">Vice Principal</option>
+              <option value="Head Teacher">Head Teacher</option>
+              <option value="Headmaster">Headmaster</option>
+              <option value="Headmistress">Headmistress</option>
+              <option value="Director">Director</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Signature — full width -->
+        <div class="card settings-card settings-card--full">
+          <h3>✍️ Principal Signature</h3>
+          <p class="section-desc">Draw your signature below. It will appear on all generated report cards.</p>
+
+          <div id="pSigSavedWrap" style="display:none;margin-bottom:16px">
+            <p class="field-label">Current Signature</p>
+            <div class="sig-saved-preview">
+              <img id="pSigPreview" style="max-height:60px;display:block" alt="Signature">
+            </div>
+          </div>
+
+          <div class="sig-canvas-wrap">
+            <canvas id="pSigCanvas" style="display:block;width:100%;height:120px;border-radius:8px;cursor:crosshair"></canvas>
+            <button id="pClearSigBtn" class="sig-clear-btn">Clear</button>
+          </div>
+          <div class="sig-action-row" style="margin-top:12px">
+            <button class="action-btn" id="pSaveSigBtn" style="font-size:13px;padding:8px 16px">💾 Save Signature</button>
+            <button class="cancel-btn" id="pRemoveSigBtn" style="display:none;font-size:13px;padding:8px 16px">🗑 Remove</button>
+          </div>
+          <p id="pSigStatus" style="font-size:11px;margin-top:8px;display:none"></p>
+        </div>
+
+        <!-- Admin code — full width -->
+        <div class="card settings-card settings-card--full">
+          <h3>🔑 Admin Code</h3>
+          <p class="section-desc">Share this code with teachers during signup. Regenerating will invalidate the old code.</p>
+          <div class="admin-code-row">
+            <span id="settingsAdminCode" class="settings-code-val">——</span>
+            <button class="cancel-btn" id="copyCodeBtn2" style="font-size:13px">📋 Copy</button>
+            <button class="cancel-btn regen-btn" id="regenCodeBtn" style="font-size:13px">🔄 Regenerate</button>
+          </div>
+        </div>
+
+      </div><!-- end settings-grid -->
+
+      <div style="margin-top:8px">
+        <button class="action-btn" id="saveSettingsBtn" style="min-width:200px">💾 Save Changes</button>
+        <p id="settingsStatus" style="font-size:12px;margin-top:8px;display:none"></p>
+      </div>
+
+    </section>
+
+  </div><!-- end sections-wrapper -->
+</div><!-- end main-area -->
+
+<script type="module" src="../js/admin-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/ss-logo-icon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchool – Student Signup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/student-signup.css">
+  <style>
+    .field-group .styled-select { width: 100%; }
+    .school-hint { font-size: 11px; color: #6b7494; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="signup-page">
+  <div class="signup-card">
+
+    <div class="signup-logo">
+      <div class="logo-icon" style="padding:0;overflow:hidden;background:none;"><img src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;"></div>
+      <span>SmartSchool</span>
+    </div>
+    <h2>Student Registration</h2>
+    <p class="signup-sub">Create your student account</p>
+
+    <div class="steps">
+      <div class="step active" id="dot1"><span>1</span><label>Personal</label></div>
+      <div class="step-line"></div>
+      <div class="step" id="dot2"><span>2</span><label>Security</label></div>
+    </div>
+
+    <div id="signupError" class="error-msg"></div>
+
+    <!-- STEP 1 -->
+    <div class="form-step active" id="step1">
+      <div class="field-group">
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="e.g. Chukwuemeka Obi">
+      </div>
+      <div class="field-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="your@email.com">
+      </div>
+      <div class="field-group">
+        <label>Select Your School</label>
+        <select id="schoolSelect" class="styled-select">
+          <option value="">Loading schools...</option>
+        </select>
+        <p class="school-hint">Only schools registered on SmartSchool appear here.</p>
+      </div>
+      <div class="field-group">
+        <label>Your Class</label>
+        <div class="arm-row">
+          <select id="classLevel" class="styled-select">
+            <option value="">Select Class</option>
+            <optgroup label="Junior Secondary">
+              <option>JSS1</option><option>JSS2</option><option>JSS3</option>
+            </optgroup>
+            <optgroup label="Senior Secondary">
+              <option>SS1</option><option>SS2</option><option>SS3</option>
+            </optgroup>
+          </select>
+          <select id="classArm" class="styled-select arm-select">
+            <option value="">Arm</option>
+            <option>A</option><option>B</option><option>C</option>
+            <option>D</option><option>E</option><option>F</option>
+          </select>
+        </div>
+        <p class="field-hint">e.g. JSS2 + A = JSS2A</p>
+      </div>
+
+      <button class="btn-primary" id="toStep2Btn">Continue →</button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="form-step" id="step2">
+
+      <div class="summary-box">
+        <h4>📋 Account Preview</h4>
+        <div id="summaryContent"></div>
+      </div>
+
+      <div class="field-group">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="password" placeholder="Min. 6 characters">
+          <span class="pw-toggle" id="toggle1">👁</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="confirmPassword" placeholder="Repeat password">
+          <span class="pw-toggle" id="toggle2">👁</span>
+        </div>
+      </div>
+
+      <div class="step-btns">
+        <button class="btn-secondary" id="backBtn">← Back</button>
+        <button class="btn-primary" id="signupBtn">Create Account</button>
+      </div>
+      <p id="loadingMsg" class="loading-msg" style="display:none">⏳ Creating account...</p>
+    </div>
+
+    <div id="successAlert" class="success-alert" style="display:none">
+      ✅ Account created! Redirecting to login...
+    </div>
+
+    <p class="login-link">Already have an account? <a href="student-login.html">Login</a></p>
+  </div>
+</div>
+
+<script type="module" src="../js/student-signup.js"></script>
+</body>
+</html>

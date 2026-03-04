@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/ss-logo-icon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchool – Teacher Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/teacher-dashboard.css">
+</head>
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon" style="padding:0;overflow:hidden;background:none;"><img src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;"></div>
+        <span class="logo-text">SmartSchool</span>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+    </div>
+
+    <div class="sidebar-profile">
+      <div class="sb-avatar-wrap">
+        <img id="sbProfileImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile">
+        <div class="sb-online-dot"></div>
+      </div>
+      <div class="sb-profile-info">
+        <p class="sb-name" id="sbName">Teacher</p>
+        <p class="sb-role" id="sbRole">SmartSchool</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active"   data-section="dashboard">   <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></button>
+      <button class="nav-item"          data-section="students">    <span class="nav-icon">👨‍🎓</span><span class="nav-label">Students</span></button>
+      <button class="nav-item"          data-section="enter-scores"><span class="nav-icon">📝</span><span class="nav-label">Enter Scores</span></button>
+      <button class="nav-item"          data-section="submit-results"><span class="nav-icon">📤</span><span class="nav-label">Submit Results</span></button>
+      <button class="nav-item role-both" data-section="collate">    <span class="nav-icon">📊</span><span class="nav-label">Collate Results</span></button>
+      <button class="nav-item role-both" data-section="reportcards"><span class="nav-icon">📄</span><span class="nav-label">Report Cards</span></button>
+      <button class="nav-item role-both" data-section="attendance">  <span class="nav-icon">📋</span><span class="nav-label">Attendance</span></button>
+      <button class="nav-item"          data-section="assignments"> <span class="nav-icon">📌</span><span class="nav-label">Assignments</span></button>
+      <button class="nav-item"          data-section="resources">   <span class="nav-icon">📚</span><span class="nav-label">Resources</span></button>
+      <button class="nav-item"          data-section="messages">    <span class="nav-icon">💬</span><span class="nav-label">Messages</span></button>
+      <button class="nav-item"          data-section="profile">     <span class="nav-icon">👤</span><span class="nav-label">My Profile</span></button>
+      <button class="nav-item"          data-section="settings">    <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="logout-btn"><span>🚪</span><span class="nav-label">Logout</span></button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main-area" id="mainArea">
+
+    <!-- School banner -->
+    <div class="school-banner" id="schoolBanner">
+      <div class="school-banner-left">
+        <div class="school-logo-placeholder" id="schoolLogoEl" style="padding:0;overflow:hidden;background:none;"><img src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;"></div>
+        <div class="school-banner-info">
+          <span class="school-banner-name" id="schoolBannerName">Loading school...</span>
+          <span class="school-banner-sub">School Management System</span>
+        </div>
+      </div>
+      <div class="school-banner-right">
+        <span id="schoolBannerDate"></span>
+      </div>
+    </div>
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-toggle" id="mobileToggle">&#9776;</button>
+        <span class="section-title" id="sectionTitle">Dashboard</span>
+      </div>
+      <div class="topbar-center">
+        <div class="search-wrap">
+          <input type="text" placeholder="Search students, assignments..." id="teacherSearch">
+          <button id="searchBtn" class="search-icon-btn" title="Search">🔍</button>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button id="themeToggle" class="icon-btn">🌙</button>
+        <div class="notification-wrapper" id="notifWrapper">
+          <button id="notificationBtn" class="icon-btn" style="position:relative">
+            🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span>
+          </button>
+          <div class="notification-dropdown" id="notificationDropdown">
+            <p class="notif-empty">No new notifications</p>
+          </div>
+        </div>
+        <div class="topbar-avatar">
+          <img id="topbarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+          <span id="topbarName">Teacher</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="sections-wrapper">
+
+      <!-- ═══ DASHBOARD ═══ -->
+      <section class="section active" id="sec-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card" style="border-left-color:#4ade80">
+            <div class="stat-icon">👨‍🎓</div>
+            <div class="stat-info"><span class="stat-title">My Students</span><span class="stat-value" id="statStudents">--</span></div>
+          </div>
+          <div class="stat-card" style="border-left-color:#60a5fa">
+            <div class="stat-icon">📌</div>
+            <div class="stat-info"><span class="stat-title">Assignments</span><span class="stat-value" id="statAssignments">--</span></div>
+          </div>
+          <div class="stat-card role-both" style="border-left-color:#f472b6">
+            <div class="stat-icon">📬</div>
+            <div class="stat-info"><span class="stat-title">Submissions</span><span class="stat-value" id="statPending">--</span></div>
+          </div>
+          <div class="stat-card" style="border-left-color:#fb923c">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info"><span class="stat-title">Unread Alerts</span><span class="stat-value" id="statNotifs">0</span></div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="card chart-card">
+            <h3>Performance Analytics</h3>
+            <div style="position:relative;height:220px"><canvas id="performanceChart"></canvas></div>
+          </div>
+          <div class="card quick-actions-card">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions" id="quickActionsGrid"></div>
+          </div>
+          <div class="card">
+            <h3>Recent Notifications</h3>
+            <div id="dashNotifList"><p class="empty-msg">No notifications yet.</p></div>
+          </div>
+          <div class="card">
+            <h3>Recent Activity</h3>
+            <div id="recentActivity"><p class="empty-msg">No recent activity.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ STUDENTS ═══ -->
+      <section class="section" id="sec-students">
+        <div class="card full-card">
+          <div class="section-header-row">
+            <h3>My Students</h3>
+            <select id="studentsClassFilter" class="styled-select"><option value="">All Classes</option></select>
+          </div>
+          <div class="table-wrap" style="margin-top:16px">
+            <table class="data-table">
+              <thead><tr><th>#</th><th>Name</th><th>Class</th><th>Email</th></tr></thead>
+              <tbody id="studentsTbody"><tr><td colspan="4" class="empty-msg">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ ENTER SCORES ═══ -->
+      <section class="section" id="sec-enter-scores">
+        <div class="card full-card">
+          <h3>Enter Student Scores</h3>
+          <p class="section-desc">
+            Standard format: <strong>1st CA (20) + 2nd CA (20) + Exam (60) = 100</strong>.
+            Assignments and attendance are recorded for reference and appear on report cards but do <em>not</em> count toward the 100.
+            Use "+ Add CA" to add extra CAs if your school uses a different split.
+          </p>
+
+          <div class="form-row" style="margin-top:16px;flex-wrap:wrap">
+            <select id="scoresClassFilter"   class="styled-select"><option value="">Select Class</option></select>
+            <select id="scoresSubjectFilter" class="styled-select"><option value="">Select Subject</option></select>
+            <select id="scoresTermFilter"    class="styled-select">
+              <option value="1st Term">1st Term</option>
+              <option value="2nd Term">2nd Term</option>
+              <option value="3rd Term">3rd Term</option>
+            </select>
+            <button class="action-btn" id="loadScoresBtn">Load Students</button>
+          </div>
+
+          <!-- CA config row -->
+          <div id="caConfigRow" style="display:none;margin-top:14px;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--card-border)">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <span style="font-size:13px;font-weight:600;color:var(--text)">CA Configuration</span>
+              <div id="caTagList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+              <button class="cancel-btn" id="addCaBtn" style="font-size:12px;padding:5px 12px">+ Add CA</button>
+              <span id="caScoreSummary" style="font-size:12px;color:var(--text2);margin-left:auto"></span>
+            </div>
+          </div>
+
+          <!-- Scores table — columns built dynamically by JS -->
+          <div class="table-wrap scores-table-wrap" style="margin-top:16px;overflow-x:auto">
+            <table class="data-table" id="scoresTable">
+              <thead id="scoresHead"></thead>
+              <tbody id="scoresTbody">
+                <tr><td colspan="10" class="empty-msg" style="padding:32px 0">
+                  Select a class, subject, and term above, then click <strong>Load Students</strong>.
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="submitScoresRow" style="display:none;margin-top:20px;padding-top:16px;border-top:1px solid var(--card-border)">
+            <p style="font-size:12px;color:var(--text2);margin-bottom:10px">
+              ✅ Scores saved here are automatically available in <strong>Submit Results</strong>.
+              Head there to review and send to the class teacher.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ SUBMIT RESULTS ═══ -->
+      <section class="section" id="sec-submit-results">
+        <div class="card full-card">
+          <h3>📤 Submit Results to Class Teacher</h3>
+          <p class="section-desc">
+            Load saved scores, review them, then submit to the class teacher for collation and report card generation.
+          </p>
+
+          <div class="form-row" style="margin-top:16px;flex-wrap:wrap">
+            <select id="submitClassFilter"   class="styled-select"><option value="">Select Class</option></select>
+            <select id="submitSubjectFilter" class="styled-select"><option value="">Select Subject</option></select>
+            <select id="submitTermFilter"    class="styled-select">
+              <option value="1st Term">1st Term</option>
+              <option value="2nd Term">2nd Term</option>
+              <option value="3rd Term">3rd Term</option>
+            </select>
+            <button class="action-btn" id="loadSubmitBtn">Load Saved Scores</button>
+          </div>
+
+          <div id="submitPreviewContainer" style="margin-top:20px">
+            <p class="empty-msg">Select class, subject, and term above to preview saved scores.</p>
+          </div>
+
+          <div id="submitActionsRow" style="display:none;margin-top:20px;padding-top:16px;border-top:1px solid var(--card-border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <p style="color:var(--text2);font-size:13px">Review the scores above — once submitted, the class teacher will be notified.</p>
+              <button class="submit-btn" id="submitToClassTeacherBtn">📬 Submit to Class Teacher</button>
+            </div>
+            <p id="submitResultStatus" style="margin-top:8px;font-size:13px;display:none"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ COLLATE RESULTS (Class Teacher only) ═══ -->
+      <section class="section" id="sec-collate">
+        <div class="card full-card">
+          <h3>Collate Results</h3>
+          <p class="section-desc">All submitted scores grouped by student. Assignments and attendance shown for reference.</p>
+          <div class="form-row" style="margin-top:16px">
+            <select id="collateTermFilter" class="styled-select">
+              <option value="1st Term">1st Term</option>
+              <option value="2nd Term">2nd Term</option>
+              <option value="3rd Term">3rd Term</option>
+            </select>
+            <button class="action-btn" id="loadCollateBtn">Load</button>
+          </div>
+          <div id="collateContainer" style="margin-top:20px">
+            <p class="empty-msg">Select a term and click Load.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ REPORT CARDS (Class Teacher only) ═══ -->
+      <section class="section" id="sec-reportcards">
+        <div class="card full-card">
+          <h3>Generate Report Cards</h3>
+          <p class="section-desc">Preview each student's full report, write your comment, then download the PDF.</p>
+          <div class="form-row" style="margin-top:16px;flex-wrap:wrap">
+            <select id="reportTermFilter" class="styled-select">
+              <option value="1st Term">1st Term</option>
+              <option value="2nd Term">2nd Term</option>
+              <option value="3rd Term">3rd Term</option>
+            </select>
+            <input type="text" id="reportNextTerm" placeholder="Next term resumes (e.g. Jan 6, 2026)" class="styled-input" style="flex:1;min-width:200px">
+            <button class="action-btn" id="loadReportStudentsBtn">Load Students</button>
+          </div>
+          <div id="reportCardsContainer" style="margin-top:20px">
+            <p class="empty-msg">Select a term and click Load Students.</p>
+          </div>
+        </div>
+
+        <!-- Report Preview Modal -->
+        <div id="reportPreviewModal" class="modal-overlay">
+          <div class="modal-box report-preview-box">
+
+            <!-- Modal header -->
+            <div class="rp-modal-header">
+              <h3 id="previewModalTitle">Report Preview</h3>
+              <button class="cancel-btn" id="closePreviewModal" style="padding:6px 14px;flex-shrink:0">✕ Close</button>
+            </div>
+
+            <!-- ══ REPORT CARD PREVIEW — looks like the actual PDF ══ -->
+            <div class="rp-card" id="reportCardPreview">
+
+              <!-- School header band -->
+              <div class="rp-header">
+                <div class="rp-school-logo" id="rp-logo" style="padding:0;overflow:hidden;"><img src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;"></div>
+                <div>
+                  <p class="rp-school-name" id="rp-school">School Name</p>
+                  <p class="rp-sub">Student Academic Report Card</p>
+                </div>
+              </div>
+
+              <!-- Student info grid -->
+              <div id="previewStudentInfo" class="rp-info-grid"></div>
+
+              <!-- Scores table -->
+              <div class="rp-section-label">Academic Performance</div>
+              <div class="rp-table-wrap">
+                <table class="rp-table" id="previewScoresTable">
+                  <thead>
+                    <tr>
+                      <th>Subject</th>
+                      <th id="previewCaHead">CA</th>
+                      <th>Exam</th>
+                      <th>Total</th>
+                      <th>Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody id="previewScoresTbody"></tbody>
+                </table>
+              </div>
+
+              <!-- Attendance + Next Term -->
+              <div id="previewExtrasRow" class="rp-extras"></div>
+
+              <!-- Teacher comment -->
+              <div class="rp-section-label">Class Teacher's Comment</div>
+              <div class="rp-comment-area">
+                <textarea id="remarkText" class="rp-comment-input" rows="3"
+                  placeholder="Write your personal comment for this student..."></textarea>
+              </div>
+
+              <!-- Remark suggestions -->
+              <div class="rp-suggestions">
+                <p class="rp-suggestions-label">Quick suggestions:</p>
+                <div class="remark-chips" id="remarkChips"></div>
+              </div>
+
+              <!-- Signature line (decorative) -->
+              <div class="rp-sig-row">
+                <div class="rp-sig-box">
+                  <div class="rp-sig-line"></div>
+                  <span>Class Teacher's Signature</span>
+                </div>
+                <div class="rp-sig-box">
+                  <div class="rp-sig-line"></div>
+                  <span>Principal's Signature</span>
+                </div>
+              </div>
+
+            </div><!-- end .rp-card -->
+
+            <!-- Action buttons -->
+            <div class="rp-actions">
+              <button class="action-btn" id="confirmGenerateBtn" style="flex:1">⬇ Generate &amp; Download PDF</button>
+              <button class="cancel-btn" id="saveRemarkOnlyBtn" style="flex:1">💾 Save Comment Only</button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ ATTENDANCE ═══ -->
+      <section class="section role-both" id="sec-attendance">
+        <div class="card full-card">
+          <h3>📋 Class Attendance</h3>
+          <p class="section-desc" style="margin-bottom:14px">
+            Official daily roll — records who was in school today. This is what appears on report cards.
+            Each class teacher's records are stored separately and cannot affect another class.
+          </p>
+          <div class="form-row" style="flex-wrap:wrap">
+            <select id="attendClassFilter" class="styled-select"><option value="">Select Class</option></select>
+            <input  type="date" id="attendDate" class="styled-input">
+            <button class="action-btn" id="loadAttendBtn">Load Students</button>
+          </div>
+          <div id="attendTermSummary" style="display:none;margin-top:14px;padding:10px 16px;background:var(--bg3);border-radius:9px;border:1px solid var(--card-border);font-size:13px;color:var(--text2)">
+            📋 Sessions recorded this term: <strong id="termSessionCount" style="color:var(--accent)">0</strong>
+          </div>
+          <div id="attendanceContainer" style="margin-top:16px">
+            <p class="empty-msg">Select a class and date, then click Load Students.</p>
+          </div>
+          <div id="attendSaveRow" style="display:none;margin-top:16px">
+            <button class="action-btn" id="saveAttendBtn">💾 Save Attendance</button>
+            <span id="attendSaveStatus" style="margin-left:12px;font-size:13px"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ ASSIGNMENTS ═══ -->
+      <section class="section" id="sec-assignments">
+        <div class="card full-card">
+          <div class="section-header-row">
+            <h3>Assignments</h3>
+            <button class="action-btn" id="openAssignModal">+ Create</button>
+          </div>
+          <div class="tab-row">
+            <button class="tab-btn active" data-tab="created">My Assignments</button>
+            <button class="tab-btn"        data-tab="submissions">Submissions</button>
+          </div>
+          <div id="tab-created" class="tab-pane active">
+            <div id="assignmentsList"><p class="empty-msg">No assignments yet.</p></div>
+          </div>
+          <div id="tab-submissions" class="tab-pane">
+            <div id="submissionsList"><p class="empty-msg">No submissions yet.</p></div>
+          </div>
+        </div>
+
+        <!-- Create assignment modal -->
+        <div class="modal-overlay" id="assignModal">
+          <div class="modal-box">
+            <h3>Create Assignment</h3>
+            <input type="text"  id="assignTitle"    placeholder="Title" class="modal-input">
+            <select id="assignClass"   class="styled-select"><option value="">Select Class</option></select>
+            <select id="assignSubject" class="styled-select"><option value="">Select Subject</option></select>
+            <select id="assignTerm"    class="styled-select">
+              <option value="">Select Term</option>
+              <option value="1st Term">1st Term</option>
+              <option value="2nd Term">2nd Term</option>
+              <option value="3rd Term">3rd Term</option>
+            </select>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field-group" style="flex:1;min-width:120px">
+                <label>Max Score</label>
+                <input type="number" id="assignMaxScore" value="100" min="1" class="styled-input" style="width:100%">
+              </div>
+              <div class="field-group" style="flex:2;min-width:180px">
+                <label>Deadline <span style="font-weight:400;text-transform:none">(optional)</span></label>
+                <input type="datetime-local" id="assignDue" class="styled-input" style="width:100%">
+              </div>
+            </div>
+            <textarea id="assignDesc" placeholder="Instructions (optional)" class="modal-textarea"></textarea>
+            <div class="modal-btns">
+              <button class="action-btn" id="saveAssignBtn">Save</button>
+              <button class="cancel-btn"  id="closeAssignModal">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grade submission modal -->
+        <div class="modal-overlay" id="gradeModal">
+          <div class="modal-box" style="max-width:560px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <h3 id="gradeModalTitle">Grade Submission</h3>
+              <button class="cancel-btn" id="closeGradeModal" style="padding:6px 12px">✕</button>
+            </div>
+            <div id="gradeStudentInfo" style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--text2)"></div>
+            <!-- Text answer -->
+            <div id="gradeTextAnswer" style="display:none;margin-bottom:14px">
+              <p style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Student's Answer</p>
+              <div id="gradeAnswerContent" style="background:var(--bg3);border-radius:9px;padding:12px;font-size:13px;line-height:1.6;color:var(--text);max-height:200px;overflow-y:auto;white-space:pre-wrap;border-left:3px solid var(--accent)"></div>
+            </div>
+            <!-- File submission -->
+            <div id="gradeFileAnswer" style="display:none;margin-bottom:14px">
+              <p style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Submitted File</p>
+              <a id="gradeFileLink" href="#" target="_blank" class="view-submission-btn" style="display:inline-flex">📎 Open Submitted File</a>
+            </div>
+            <!-- Grade inputs -->
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div class="field-group" style="flex:1;min-width:120px">
+                <label id="gradeScoreLabel">Score (0–100)</label>
+                <input type="number" id="gradeScoreInput" min="0" class="styled-input" style="width:100%" placeholder="Enter score">
+              </div>
+              <div class="field-group" style="flex:2;min-width:180px">
+                <label>Remark <span style="font-weight:400;text-transform:none">(optional)</span></label>
+                <input type="text" id="gradeRemarkInput" class="styled-input" style="width:100%" placeholder="e.g. Well done! Needs more detail.">
+              </div>
+            </div>
+            <div class="modal-btns" style="margin-top:16px">
+              <button class="action-btn" id="confirmGradeBtn">✅ Save Grade &amp; Notify Student</button>
+            </div>
+            <p id="gradeStatus" style="font-size:12px;margin-top:8px;display:none"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ RESOURCES ═══ -->
+      <section class="section" id="sec-resources">
+        <div class="card full-card">
+          <div class="section-header-row">
+            <h3>Teaching Resources</h3>
+            <button class="action-btn" id="openResourceModal">+ Upload</button>
+          </div>
+          <div id="resourcesList" class="cards-grid"><p class="empty-msg">No materials uploaded yet.</p></div>
+        </div>
+        <div class="modal-overlay" id="resourceModal">
+          <div class="modal-box">
+            <h3>Upload Learning Material</h3>
+            <input type="text"  id="resTitle"   placeholder="Title" class="modal-input">
+            <select id="resClass"   class="styled-select"><option value="">Select Class</option></select>
+            <select id="resSubject" class="styled-select"><option value="">Select Subject</option></select>
+            <input type="file" id="resFile" class="styled-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.png">
+            <div class="modal-btns">
+              <button class="action-btn" id="saveResourceBtn">Upload</button>
+              <button class="cancel-btn"  id="closeResourceModal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ MESSAGES ═══ -->
+      <section class="section" id="sec-messages">
+        <div class="card full-card">
+          <h3>Messages</h3>
+          <div class="chat-placeholder">
+            <div class="chat-icon">💬</div>
+            <p>Messaging feature coming soon.</p>
+            <p class="sub">Send messages to students, parents, and other teachers.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ PROFILE ═══ -->
+      <section class="section" id="sec-profile">
+        <div class="profile-layout">
+
+          <div class="card profile-left-card">
+            <div class="profile-avatar-wrap">
+              <img id="profilePreview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-big-avatar">
+              <label for="profileUpload" class="change-photo-btn">📷 Change Photo</label>
+              <input type="file" id="profileUpload" accept="image/*" style="display:none">
+              <p id="uploadStatus" style="margin-top:8px;font-size:13px;display:none"></p>
+            </div>
+            <div class="profile-name-wrap">
+              <h2 id="profName">--</h2>
+              <span class="role-badge" id="profRoleBadge">Teacher</span>
+            </div>
+
+            <!-- Signature card (Class Teachers) — moved to left column for visibility -->
+            <div class="role-both sig-card" id="sigCard" style="width:100%;margin-top:20px;padding-top:20px;border-top:1px solid var(--card-border)">
+              <p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">✍️ My Signature</p>
+              <p style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5">
+                Draw your signature below using your mouse or finger. It will be embedded in all generated report cards.
+              </p>
+              <!-- Saved signature preview -->
+              <div id="sigSavedWrap" style="display:none;margin-bottom:12px">
+                <p style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Current Signature</p>
+                <div style="background:#fff;border-radius:8px;padding:8px;display:inline-block;max-width:100%">
+                  <img id="sigPreview" class="signature-preview" style="max-height:60px;display:block" alt="Signature">
+                </div>
+              </div>
+              <!-- Draw pad -->
+              <div id="sigDrawSection">
+                <p style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Draw new signature</p>
+                <div style="background:#fff;border-radius:10px;border:2px dashed #d1d5db;position:relative;touch-action:none">
+                  <canvas id="sigCanvas" style="display:block;width:100%;height:130px;border-radius:8px;cursor:crosshair"></canvas>
+                  <button id="clearSigBtn" style="position:absolute;top:6px;right:8px;background:rgba(0,0,0,0.08);border:none;border-radius:5px;padding:3px 8px;font-size:11px;color:#666;cursor:pointer">Clear</button>
+                </div>
+              </div>
+              <div class="sig-action-row" style="margin-top:10px">
+                <button class="action-btn" id="saveSigBtn" style="font-size:12px;padding:7px 14px">💾 Save Signature</button>
+                <button class="cancel-btn" id="removeSigBtn" style="display:none;font-size:12px;padding:7px 14px">🗑 Remove</button>
+              </div>
+              <p id="sigUploadStatus" style="font-size:11px;margin-top:6px;display:none"></p>
+            </div>
+          </div>
+
+          <div class="card profile-right-card">
+            <h3>Profile Details</h3>
+            <div class="profile-details-grid">
+              <div class="detail-item"><span class="detail-label">Full Name</span><span class="detail-value" id="profNameVal">--</span></div>
+              <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value" id="profEmail">--</span></div>
+              <div class="detail-item"><span class="detail-label">School</span><span class="detail-value" id="profSchool">--</span></div>
+              <div class="detail-item"><span class="detail-label">Role</span><span class="detail-value" id="profType">--</span></div>
+              <div class="detail-item role-both"><span class="detail-label">Main Class</span><span class="detail-value" id="profClass">--</span></div>
+            </div>
+            <h3 style="margin-top:24px">Subjects Taught</h3>
+            <div id="profSubjects" class="tag-container"></div>
+            <h3 style="margin-top:24px">Classes Teaching</h3>
+            <div id="profClasses" class="tag-container"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ═══ SETTINGS ═══ -->
+      <section class="section" id="sec-settings">
+        <div class="card full-card">
+          <h3>Settings</h3>
+          <div class="settings-list">
+            <div class="setting-item">
+              <div><p class="setting-title">Dark Mode</p><p class="setting-sub">Toggle between light and dark theme</p></div>
+              <label class="toggle-switch"><input type="checkbox" id="darkModeSwitch"><span class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+              <div><p class="setting-title">Notifications</p><p class="setting-sub">Receive alerts for submissions and messages</p></div>
+              <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="toastBox" style="position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:320px"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script type="module" src="../js/teacher-dashboard.js"></script>
+</body>
+</html>

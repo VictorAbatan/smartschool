@@ -1,0 +1,180 @@
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: linear-gradient(135deg, #0f1117 0%, #1a2744 50%, #0f1117 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.login-page {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 40px 36px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+/* Logo */
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #6ee7b7, #3b82f6);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 18px; color: #fff;
+}
+.login-logo span { font-size: 18px; font-weight: 700; color: #fff; }
+
+h2 {
+  text-align: center;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.login-sub {
+  text-align: center;
+  color: #9ba3b8;
+  font-size: 13px;
+  margin-bottom: 28px;
+}
+
+/* Error */
+.error-msg {
+  color: #ff6b6b;
+  font-size: 13px;
+  text-align: center;
+  min-height: 18px;
+  margin-bottom: 10px;
+}
+
+/* Fields */
+.field-group { margin-bottom: 16px; }
+.field-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ba3b8;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus { border-color: #6ee7b7; }
+input::placeholder { color: #6b7494; }
+
+/* Password wrap */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 42px; }
+.pw-toggle {
+  position: absolute;
+  right: 13px; top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+  user-select: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.pw-toggle:hover { opacity: 1; }
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #6ee7b7, #3b82f6);
+  border: none;
+  border-radius: 10px;
+  color: #0f1117;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* Signup link */
+.signup-link {
+  text-align: center;
+  color: #9ba3b8;
+  font-size: 13px;
+  margin-top: 20px;
+}
+.signup-link a {
+  color: #6ee7b7;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Admin section */
+.admin-toggle-wrap {
+  margin-top: 24px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 18px;
+}
+.admin-toggle-btn {
+  background: none;
+  border: none;
+  color: #6b7494;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.admin-toggle-btn:hover { color: #9ba3b8; }
+
+.admin-section { text-align: left; }
+
+.btn-admin {
+  width: 100%;
+  padding: 11px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  color: #9ba3b8;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-admin:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+@media (max-width: 480px) {
+  .login-card { padding: 32px 22px; }
+}

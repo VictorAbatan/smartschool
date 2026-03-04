@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Dark navy background with rounded corners -->
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  
+  <!-- Teal gradient layer -->
+  <defs>
+    <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Graduation cap shape (top) -->
+  <polygon points="32,10 52,19 32,28 12,19" fill="url(#tg)" opacity="0.9"/>
+  <rect x="46" y="19" width="3" height="10" rx="1.5" fill="#6ee7b7" opacity="0.7"/>
+  
+  <!-- Book / open pages (bottom) -->
+  <path d="M18 32 Q18 50 32 52 Q46 50 46 32 L46 33 Q46 49 32 51 Q18 49 18 33 Z" fill="none" stroke="url(#tg)" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="32" y1="32" x2="32" y2="51" stroke="#6ee7b7" stroke-width="1.5" opacity="0.8"/>
+  <path d="M22 36 Q27 34 32 35" stroke="#6ee7b7" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M22 40 Q27 38 32 39" stroke="#6ee7b7" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <path d="M42 36 Q37 34 32 35" stroke="#6ee7b7" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M42 40 Q37 38 32 39" stroke="#6ee7b7" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+</svg>

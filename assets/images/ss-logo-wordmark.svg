@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48">
+  <defs>
+    <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon mark -->
+  <rect width="40" height="40" x="0" y="4" rx="10" fill="#0f172a"/>
+  <polygon points="20,8 34,14 20,20 6,14" fill="url(#tg)" opacity="0.9"/>
+  <rect x="31" y="14" width="2.5" height="7" rx="1.2" fill="#6ee7b7" opacity="0.7"/>
+  <path d="M8 22 Q8 35 20 37 Q32 35 32 22 L32 23 Q32 34 20 36 Q8 34 8 23 Z" 
+        fill="none" stroke="url(#tg)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="20" y1="22" x2="20" y2="36" stroke="#6ee7b7" stroke-width="1.2" opacity="0.8"/>
+  <path d="M11 26 Q15 24.5 20 25.5" stroke="#6ee7b7" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M29 26 Q25 24.5 20 25.5" stroke="#6ee7b7" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.7"/>
+  
+  <!-- Wordmark -->
+  <text x="50" y="22" font-family="Plus Jakarta Sans, system-ui, sans-serif" 
+        font-size="17" font-weight="800" fill="white" letter-spacing="-0.5">Smart</text>
+  <text x="103" y="22" font-family="Plus Jakarta Sans, system-ui, sans-serif" 
+        font-size="17" font-weight="800" letter-spacing="-0.5">
+    <tspan fill="url(#tg)">School</tspan>
+  </text>
+  <text x="50" y="35" font-family="Plus Jakarta Sans, system-ui, sans-serif" 
+        font-size="9" font-weight="500" fill="#64748b" letter-spacing="1.5">MANAGEMENT SYSTEM</text>
+</svg>

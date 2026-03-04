@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/ss-logo-icon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchool – Student Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/student-login.css">
+</head>
+<body>
+
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div class="logo-icon" style="padding:0;overflow:hidden;background:none;"><img src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;"></div>
+      <span>SmartSchool</span>
+    </div>
+
+    <h2>Welcome Back</h2>
+    <p class="login-sub">Sign in to your student account</p>
+
+    <div id="loginError" class="error-msg"></div>
+
+    <div class="field-group">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="your@email.com">
+    </div>
+
+    <div class="field-group">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="Your password">
+        <span class="pw-toggle" id="togglePassword">👁</span>
+      </div>
+    </div>
+
+    <button type="button" id="loginBtn" class="btn-primary">
+      <span id="loginBtnText">Sign In</span>
+      <span id="loginSpinner" style="display:none">⏳ Signing in...</span>
+    </button>
+
+    <p class="signup-link">
+      Don't have an account? <a href="student-signup.html">Sign up</a>
+    </p>
+
+  </div>
+</div>
+
+<script type="module" src="../js/student-login.js"></script>
+</body>
+</html>

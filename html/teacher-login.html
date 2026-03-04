@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/ss-logo-icon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchool – Teacher Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/teacher-login.css">
+</head>
+<body>
+
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div class="logo-icon" style="padding:0;overflow:hidden;background:none;"><img src="../assets/images/ss-logo-icon.svg" alt="SmartSchool" style="width:100%;height:100%;object-fit:contain;display:block;"></div>
+      <span>SmartSchool</span>
+    </div>
+
+    <h2>Welcome Back</h2>
+    <p class="login-sub">Sign in to your teacher account</p>
+
+    <div id="loginError" class="error-msg"></div>
+
+    <div class="field-group">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="your@email.com">
+    </div>
+
+    <div class="field-group">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="Your password">
+        <span class="pw-toggle" id="togglePassword">👁</span>
+      </div>
+    </div>
+
+    <button type="button" id="loginBtn" class="btn-primary">
+      <span id="loginBtnText">Sign In</span>
+      <span id="loginSpinner" style="display:none">⏳ Signing in...</span>
+    </button>
+
+    <p class="signup-link">
+      Don't have an account? <a href="teacher-signup.html">Sign up</a>
+    </p>
+
+    <!-- Admin login — hidden by default, toggle below -->
+    <div class="admin-toggle-wrap">
+      <button class="admin-toggle-btn" id="adminToggleBtn">Admin access ▾</button>
+      <div class="admin-section" id="adminSection" style="display:none">
+        <div class="field-group" style="margin-top:12px">
+          <label>School Admin Code</label>
+          <input type="text" id="adminCode" placeholder="e.g. XK7T2M" style="text-transform:uppercase;letter-spacing:3px;font-weight:700">
+        </div>
+        <div class="field-group">
+          <label>Principal Email</label>
+          <input type="email" id="adminEmail" placeholder="principal@school.edu.ng">
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input type="password" id="adminPassword" placeholder="Your password">
+        </div>
+        <button type="button" id="adminLoginBtn" class="btn-admin">Enter as Admin</button>
+        <p style="text-align:center;margin-top:10px;font-size:12px;color:#9ba3b8">
+          Not registered? <a href="admin-signup.html" style="color:#6ee7b7">Set up your school</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="../js/teacher-login.js"></script>
+</body>
+</html>
