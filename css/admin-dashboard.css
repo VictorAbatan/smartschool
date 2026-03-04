@@ -521,7 +521,7 @@
 }
 .notif-dismiss:hover { color: #ef4444; background: rgba(239,68,68,0.08); }
 
-/* ── Sidebar: ensure name never overflows ── */
+/* ── Sidebar: ensure principal name never overflows ── */
 .sb-profile-info {
   flex: 1;
   min-width: 0;
@@ -542,6 +542,38 @@
   font-size: 11px;
   color: var(--text2);
   white-space: nowrap;
+}
+
+/* ── Sidebar: SmartSchool logo + wordmark ── */
+.sidebar-header .sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+#sbSchoolName {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+
+/* ── Topbar: allow school block to shrink ── */
+.topbar-school {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.topbar-school > div {
+  min-width: 0;
+  overflow: hidden;
+}
+.topbar-school-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
 }
 
 /* ── Results: class/arm hierarchy ── */
@@ -674,37 +706,4 @@ body.light-mode .sidebar { border-color: #e2e8f0; }
   .notif-panel { width: 280px; right: -40px; }
   .results-level-body { padding: 8px; }
   .results-arm-body { padding: 8px; overflow-x: auto; }
-}
-
-/* ── Long school name fixes ── */
-
-/* Sidebar: let the name wrap to two lines instead of clipping */
-.sidebar-logo {
-  white-space: normal;
-  overflow: visible;
-  min-width: 0;
-}
-.logo-text {
-  white-space: normal;
-  word-break: break-word;
-  font-size: 13px;
-  line-height: 1.25;
-  max-width: 130px;
-}
-
-/* Topbar: allow school block to shrink so the right side never gets pushed off */
-.topbar-school {
-  flex-shrink: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-.topbar-school > div {
-  min-width: 0;
-  overflow: hidden;
-}
-.topbar-school-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 220px;
 }

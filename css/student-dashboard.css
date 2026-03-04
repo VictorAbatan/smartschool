@@ -1271,25 +1271,3 @@ body {
   background: rgba(74,222,128,0.15);
   color: #4ade80;
 }
-/* ── Long school name fixes ── */
-.sidebar-logo {
-  white-space: normal;
-  overflow: visible;
-  min-width: 0;
-}
-.logo-text {
-  white-space: normal;
-  word-break: break-word;
-  font-size: 13px;
-  line-height: 1.25;
-  max-width: 130px;
-}
-.school-name-topbar,
-.topbar-school-name,
-#schoolBannerName {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-  display: block;
-}
