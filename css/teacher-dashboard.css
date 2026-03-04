@@ -1556,3 +1556,26 @@ body.role-subject .role-both { display: none !important; }
   .comp-input-grid { grid-template-columns: 1fr; }
   .modal-box { padding: 20px; }
 }
+/* ── Long school name fixes ── */
+.sidebar-logo {
+  white-space: normal;
+  overflow: visible;
+  min-width: 0;
+}
+.logo-text {
+  white-space: normal;
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.25;
+  max-width: 130px;
+}
+/* Topbar school block (teacher/student dashboards) */
+.school-name-topbar,
+.topbar-school-name,
+#schoolBannerName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  display: block;
+}
