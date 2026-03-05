@@ -104,6 +104,7 @@ const notifWrapper  = document.getElementById("notifWrapper");
 // Toggle panel
 notifBtn?.addEventListener("click", e => {
   e.stopPropagation();
+  if (!notifPanel) return;
   const open = notifPanel.style.display === "block";
   notifPanel.style.display = open ? "none" : "block";
 });
@@ -125,10 +126,9 @@ function startNotifListener(school) {
 
     // Badge
     if (notifs.length > 0) {
-      notifBadge.textContent = notifs.length > 9 ? "9+" : notifs.length;
-      notifBadge.style.display = "flex";
+      if (notifBadge) { notifBadge.textContent = notifs.length > 9 ? "9+" : notifs.length; notifBadge.style.display = "flex"; }
     } else {
-      notifBadge.style.display = "none";
+      if (notifBadge) notifBadge.style.display = "none";
     }
 
     // Panel list
