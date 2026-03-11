@@ -40,6 +40,7 @@
       <button class="nav-item" data-section="reportcards"><span class="nav-icon">📄</span><span class="nav-label">Report Cards</span></button>
       <button class="nav-item" data-section="attendance"><span class="nav-icon">📅</span><span class="nav-label">Attendance</span></button>
       <button class="nav-item" data-section="assignments"><span class="nav-icon">📌</span><span class="nav-label">Assignments</span></button>
+      <button class="nav-item" data-section="tests"><span class="nav-icon">🧪</span><span class="nav-label">Tests / CA</span></button>
       <button class="nav-item" data-section="resources"><span class="nav-icon">📚</span><span class="nav-label">Resources</span></button>
       <button class="nav-item" data-section="profile"><span class="nav-icon">👤</span><span class="nav-label">My Profile</span></button>
       <button class="nav-item" data-section="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
@@ -162,6 +163,7 @@
             <h3>Quick Actions</h3>
             <div class="quick-links">
               <button class="ql-btn" data-section="assignments"><span>📌</span><span>Assignments</span></button>
+              <button class="ql-btn" data-section="tests"><span>🧪</span><span>Tests</span></button>
               <button class="ql-btn" data-section="results"><span>📊</span><span>My Results</span></button>
               <button class="ql-btn" data-section="resources"><span>📚</span><span>Resources</span></button>
               <button class="ql-btn" data-section="attendance"><span>📅</span><span>Attendance</span></button>
@@ -290,6 +292,55 @@
             <div class="modal-btns">
               <button class="action-btn" id="doSubmitBtn">Submit</button>
               <button class="cancel-btn" id="closeSubmitModal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════
+           TESTS / CA
+      ═══════════════════════════ -->
+      <section class="section" id="sec-tests">
+        <div class="card full-card">
+          <div class="section-header-row">
+            <h3>Tests &amp; CA</h3>
+          </div>
+          <div class="tab-row">
+            <button class="tab-btn active" data-tab="tests-upcoming">Upcoming</button>
+            <button class="tab-btn"        data-tab="tests-completed">Completed</button>
+          </div>
+          <div id="tab-tests-upcoming"  class="tab-pane active" style="margin-top:16px">
+            <div id="upcomingTests"><p class="empty-msg">Loading tests...</p></div>
+          </div>
+          <div id="tab-tests-completed" class="tab-pane" style="margin-top:16px">
+            <div id="completedTests"><p class="empty-msg">No completed tests yet.</p></div>
+          </div>
+        </div>
+
+        <!-- Test taking overlay -->
+        <div class="modal-overlay" id="testTakeModal">
+          <div class="modal-box" style="max-width:700px;max-height:95vh;overflow-y:auto;padding:0">
+            <!-- Header with timer -->
+            <div class="test-take-header">
+              <div>
+                <h3 id="testTakeTitle" style="margin:0;font-size:15px"></h3>
+                <p id="testTakeSubInfo" style="margin:0;font-size:12px;color:var(--text2)"></p>
+              </div>
+              <div style="text-align:right">
+                <div class="test-timer" id="testCountdown">--:--</div>
+                <p style="font-size:10px;color:var(--text2);margin:0">remaining</p>
+              </div>
+            </div>
+            <div style="padding:0 20px 20px">
+              <!-- Optional attached file -->
+              <div id="testAttachmentBar" style="display:none;margin-bottom:16px;padding:10px 14px;background:var(--bg3);border-radius:9px;border:1px solid var(--card-border)">
+                <a id="testAttachmentLink" href="#" target="_blank" style="font-size:13px;color:var(--accent)">📎 View attached file / passage</a>
+              </div>
+              <div id="testQuestionsContainer"></div>
+              <div class="modal-btns" style="margin-top:20px">
+                <button class="action-btn" id="submitTestBtn">Submit Test</button>
+                <p id="testSubmitStatus" style="font-size:12px;color:var(--text2);margin:8px 0 0"></p>
+              </div>
             </div>
           </div>
         </div>

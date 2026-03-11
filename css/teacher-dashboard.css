@@ -1579,3 +1579,132 @@ body.role-subject .role-both { display: none !important; }
   max-width: 200px;
   display: block;
 }
+/* ═══════════════════════════════════════
+   ASSIGNMENTS & TESTS — NEW COMPONENTS
+═══════════════════════════════════════ */
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color .2s, background .2s;
+}
+.type-chip:has(input:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg3));
+}
+.type-chip input { accent-color: var(--accent); }
+
+/* MCQ question card */
+.mcq-card, .theory-card {
+  background: var(--bg3);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 14px;
+}
+.mcq-card .mcq-question-input {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 13px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+.mcq-option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.mcq-option-row input[type=text] {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  padding: 6px 10px;
+  color: var(--text);
+  font-size: 12px;
+}
+.mcq-option-row input[type=radio] { accent-color: #4ade80; flex-shrink: 0; }
+.mcq-correct-label { font-size: 11px; color: #4ade80; white-space: nowrap; }
+.mcq-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.mcq-qnum { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; }
+.remove-q-btn {
+  background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; padding: 2px 6px;
+}
+.remove-q-btn:hover { background: rgba(239,68,68,.1); border-radius: 5px; }
+
+/* Test card in list */
+.test-card {
+  background: var(--bg3);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.test-card-info h4 { margin: 0 0 4px; font-size: 14px; color: var(--text); }
+.test-card-info p  { margin: 0; font-size: 12px; color: var(--text2); }
+.test-card-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.live-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  background: rgba(239,68,68,.15); color: #ef4444;
+}
+.live-badge.active { background: #ef4444; color: #fff; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* Student test-taking */
+.test-take-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; background: var(--bg3);
+  border-bottom: 1px solid var(--card-border); border-radius: 10px 10px 0 0;
+  margin-bottom: 20px;
+}
+.test-timer {
+  font-size: 20px; font-weight: 800; color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.test-timer.urgent { color: #ef4444; animation: pulse 1s infinite; }
+.test-question-block {
+  background: var(--bg3); border: 1px solid var(--card-border);
+  border-radius: 10px; padding: 16px; margin-bottom: 14px;
+}
+.test-question-block .q-text {
+  font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+}
+.test-option-label {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: var(--bg2);
+  border: 1px solid var(--card-border); border-radius: 8px;
+  margin-bottom: 6px; cursor: pointer; font-size: 13px; color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+.test-option-label:has(input:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg2));
+}
+.test-option-label input { accent-color: var(--accent); }

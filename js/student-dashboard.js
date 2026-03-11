@@ -124,6 +124,7 @@ const sectionNames = {
   reportcards: "Report Cards",
   attendance:  "Attendance",
   assignments: "Assignments",
+  tests:       "Tests & CA",
   resources:   "Resources",
   profile:     "My Profile",
   settings:    "Settings"
@@ -147,6 +148,7 @@ function switchSection(name) {
     attendance:  () => {},
     assignments: loadAssignments,
     resources:   loadResources,
+    tests:       loadStudentTests,
   };
   if (loaders[name]) loaders[name]();
 }
@@ -1237,4 +1239,256 @@ document.getElementById("profileUpload").addEventListener("change", async e => {
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   await signOut(auth);
   window.location.href = "student-login.html";
+});
+/* ════════════════════════════════════════════════════
+   TESTS & CA — STUDENT
+════════════════════════════════════════════════════ */
+let activeTestData     = null;
+let testTimerInterval  = null;
+let testAnswers        = {};
+const testTakeModal    = document.getElementById("testTakeModal");
+
+/* ── Tab switcher ── */
+document.querySelectorAll("#sec-tests .tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#sec-tests .tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll("#sec-tests .tab-pane").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`tab-${btn.dataset.tab}`)?.classList.add("active");
+    if (btn.dataset.tab === "tests-completed") loadCompletedTests();
+  });
+});
+
+/* ── Load upcoming / available tests ── */
+async function loadStudentTests() {
+  if (!studentData) return;
+  const container = document.getElementById("upcomingTests"); if (!container) return;
+  container.innerHTML = `<p class="empty-msg">Loading...</p>`;
+  try {
+    const cls  = studentData.studentClass;
+    const now  = new Date();
+    // Tests where this student's class is included, school matches, and status is open or active
+    const snap = await getDocs(query(
+      collection(db, "tests"),
+      where("school", "==", studentData.school),
+      where("classes", "array-contains", cls)
+    ));
+    // Filter: open deadline-based or active live tests
+    const available = snap.docs.map(d=>({id:d.id,...d.data()})).filter(t => {
+      if (t.status === "ended") return false;
+      if (t.mode === "live") return t.status === "active";
+      if (t.mode === "deadline") {
+        if (t.status !== "open") return false;
+        if (t.deadline && new Date(t.deadline) < now) return false;
+        return true;
+      }
+      return false;
+    });
+
+    // Filter out tests already submitted
+    const subSnap = await getDocs(query(
+      collection(db, "testSubmissions"),
+      where("studentId", "==", studentData._uid)
+    ));
+    const submittedIds = new Set(subSnap.docs.map(d=>d.data().testId));
+    const pending = available.filter(t => !submittedIds.has(t.id));
+
+    if (pending.length === 0) {
+      container.innerHTML = `<p class="empty-msg">No tests available right now.</p>`;
+      return;
+    }
+    container.innerHTML = "";
+    pending.forEach(t => {
+      const card = document.createElement("div");
+      card.className = "test-card";
+      const isLive = t.mode === "live";
+      card.innerHTML = `
+        <div class="test-card-info">
+          <h4>${t.title}</h4>
+          <p>${t.subject} · ${t.term} · ${t.questions?.length||0} questions · ${t.duration} min · Max: ${t.maxScore}</p>
+          ${isLive ? `<p><span class="live-badge active">🔴 LIVE NOW</span></p>` :
+            t.deadline ? `<p style="font-size:12px;color:var(--text2)">⏰ Due: ${new Date(t.deadline).toLocaleString("en-NG",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</p>` : ""}
+        </div>
+        <div class="test-card-actions">
+          <button class="action-btn" ${isLive?"style='background:#ef4444'":`style="background:var(--accent)"`} data-id="${t.id}">
+            ${isLive ? "▶ Take Live Test" : "▶ Start Test"}
+          </button>
+        </div>`;
+      card.querySelector("button").addEventListener("click", () => openTestTake(t));
+      container.appendChild(card);
+    });
+  } catch(err) { container.innerHTML = `<p class="empty-msg">Error: ${err.message}</p>`; }
+}
+
+/* ── Load completed tests ── */
+async function loadCompletedTests() {
+  if (!studentData) return;
+  const container = document.getElementById("completedTests"); if (!container) return;
+  container.innerHTML = `<p class="empty-msg">Loading...</p>`;
+  try {
+    const snap = await getDocs(query(
+      collection(db,"testSubmissions"), where("studentId","==",studentData._uid)
+    ));
+    if (snap.empty) { container.innerHTML=`<p class="empty-msg">No completed tests yet.</p>`; return; }
+    const subs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    subs.sort((a,b)=>(b.submittedAt?.toMillis?.()||0)-(a.submittedAt?.toMillis?.()||0));
+    container.innerHTML="";
+    subs.forEach(s => {
+      const card = document.createElement("div");
+      card.className="test-card";
+      card.innerHTML=`
+        <div class="test-card-info">
+          <h4>${s.testTitle||"Test"}</h4>
+          <p>${s.subject||""} · ${s.term||""} · ${s.submittedAt?.toDate?.()?.toLocaleDateString("en-NG")||""}</p>
+        </div>
+        <div class="test-card-actions">
+          <span style="font-size:18px;font-weight:800;color:var(--accent)">${s.score!=null ? s.score+"/"+s.maxScore : "Pending"}</span>
+          ${s.score!=null ? `<span class="person-badge blue">Graded</span>` : `<span class="person-badge">Awaiting grade</span>`}
+        </div>`;
+      container.appendChild(card);
+    });
+  } catch(err) { container.innerHTML=`<p class="empty-msg">Error: ${err.message}</p>`; }
+}
+
+/* ── Open test-taking UI ── */
+function openTestTake(test) {
+  activeTestData = test;
+  testAnswers    = {};
+  clearInterval(testTimerInterval);
+
+  // Set header info
+  const titleEl = document.getElementById("testTakeTitle");
+  const subEl   = document.getElementById("testTakeSubInfo");
+  if (titleEl) titleEl.textContent = test.title;
+  if (subEl)   subEl.textContent   = `${test.subject} · ${test.term} · ${test.questions?.length||0} questions`;
+
+  // Attachment
+  const attBar  = document.getElementById("testAttachmentBar");
+  const attLink = document.getElementById("testAttachmentLink");
+  if (test.attachmentUrl) {
+    if (attBar)  attBar.style.display  = "block";
+    if (attLink) attLink.href = test.attachmentUrl;
+  } else {
+    if (attBar)  attBar.style.display  = "none";
+  }
+
+  // Render questions
+  const qContainer = document.getElementById("testQuestionsContainer");
+  if (qContainer) {
+    qContainer.innerHTML = "";
+    (test.questions||[]).forEach((q,qi) => {
+      const block = document.createElement("div");
+      block.className = "test-question-block";
+      if (q.type === "mcq" || !q.type) {
+        block.innerHTML = `
+          <p class="q-text">Q${qi+1}. ${q.question}</p>
+          ${(q.options||[]).filter(o=>o.trim()).map((opt,oi) => `
+            <label class="test-option-label">
+              <input type="radio" name="q${qi}" value="${oi}"> ${opt}
+            </label>`).join("")}`;
+        block.querySelectorAll(`input[name="q${qi}"]`).forEach(r => {
+          r.addEventListener("change", e => { testAnswers[qi] = parseInt(e.target.value); });
+        });
+      } else {
+        block.innerHTML = `
+          <p class="q-text">Q${qi+1}. ${q.question}</p>
+          <textarea class="modal-textarea" placeholder="Type your answer here..." style="min-height:80px"
+            data-qi="${qi}"></textarea>`;
+        block.querySelector("textarea").addEventListener("input", e => {
+          testAnswers[qi] = e.target.value;
+        });
+      }
+      qContainer.appendChild(block);
+    });
+  }
+
+  // Start countdown
+  const durationMs = (test.duration || 30) * 60 * 1000;
+  const endTime    = Date.now() + durationMs;
+  const countdownEl = document.getElementById("testCountdown");
+
+  testTimerInterval = setInterval(() => {
+    const left = Math.max(0, endTime - Date.now());
+    const mins = Math.floor(left / 60000);
+    const secs = Math.floor((left % 60000) / 1000);
+    if (countdownEl) {
+      countdownEl.textContent = `${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
+      countdownEl.className   = `test-timer${left < 120000 ? " urgent" : ""}`;
+    }
+    if (left === 0) { clearInterval(testTimerInterval); submitTest(true); }
+  }, 1000);
+
+  testTakeModal?.classList.add("open");
+}
+
+/* ── Submit test ── */
+document.getElementById("submitTestBtn")?.addEventListener("click", () => submitTest(false));
+
+async function submitTest(auto) {
+  if (!activeTestData) return;
+  if (!auto && !confirm("Submit test now? You won't be able to change your answers.")) return;
+  clearInterval(testTimerInterval);
+  const btn      = document.getElementById("submitTestBtn");
+  const statusEl = document.getElementById("testSubmitStatus");
+  if (btn) { btn.disabled=true; btn.textContent="Submitting..."; }
+
+  try {
+    const t = activeTestData;
+    // Auto-grade MCQ
+    let score = null;
+    const hasMcq  = t.questions?.every(q => q.type === "mcq" || !q.type);
+    if (hasMcq) {
+      score = 0;
+      t.questions.forEach((q, qi) => {
+        if (testAnswers[qi] === q.correct) score++;
+      });
+      // Scale to maxScore
+      score = Math.round((score / t.questions.length) * t.maxScore);
+    }
+
+    await addDoc(collection(db,"testSubmissions"), {
+      testId:      t.id,
+      testTitle:   t.title,
+      studentId:   studentData._uid,
+      studentName: studentData.name,
+      studentClass:studentData.studentClass,
+      school:      studentData.school,
+      subject:     t.subject,
+      term:        t.term,
+      answers:     testAnswers,
+      maxScore:    t.maxScore,
+      score:       score,
+      autoGraded:  hasMcq,
+      submittedAt: serverTimestamp()
+    });
+
+    // Notify teacher
+    try {
+      await addDoc(collection(db,"notifications"), {
+        userId:  t.teacherId,
+        type:    "test_submission",
+        message: `📝 ${studentData.name} submitted "${t.title}"${score!=null ? ` — Score: ${score}/${t.maxScore}` : ""}`,
+        read:    false, createdAt: serverTimestamp()
+      });
+    } catch {}
+
+    testTakeModal?.classList.remove("open");
+    activeTestData = null;
+
+    if (hasMcq) {
+      toast(`Test submitted! Your score: ${score}/${t.maxScore}`, "success", 5000);
+    } else {
+      toast("Test submitted! Your teacher will grade it soon.", "success");
+    }
+    loadStudentTests();
+    loadCompletedTests();
+  } catch(err) {
+    if (btn) { btn.disabled=false; btn.textContent="Submit Test"; }
+    if (statusEl) { statusEl.textContent="❌ "+err.message; statusEl.style.display="block"; }
+    toast("Submission failed: "+err.message, "error");
+  }
+}
+
+document.getElementById("testTakeModal")?.addEventListener("click", e => {
+  // Prevent accidental close — no close on backdrop for test modal
 });

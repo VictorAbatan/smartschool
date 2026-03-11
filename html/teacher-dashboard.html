@@ -40,6 +40,7 @@
       <button class="nav-item role-both" data-section="reportcards"><span class="nav-icon">📄</span><span class="nav-label">Report Cards</span></button>
       <button class="nav-item role-both" data-section="attendance">  <span class="nav-icon">📋</span><span class="nav-label">Attendance</span></button>
       <button class="nav-item"          data-section="assignments"> <span class="nav-icon">📌</span><span class="nav-label">Assignments</span></button>
+      <button class="nav-item"          data-section="tests">      <span class="nav-icon">🧪</span><span class="nav-label">Tests / CA</span></button>
       <button class="nav-item"          data-section="resources">   <span class="nav-icon">📚</span><span class="nav-label">Resources</span></button>
       <button class="nav-item"          data-section="messages">    <span class="nav-icon">💬</span><span class="nav-label">Messages</span></button>
       <button class="nav-item"          data-section="profile">     <span class="nav-icon">👤</span><span class="nav-label">My Profile</span></button>
@@ -406,21 +407,60 @@
           </div>
         </div>
 
-        <!-- Create assignment modal -->
+        <!-- Create / Edit assignment modal -->
         <div class="modal-overlay" id="assignModal">
-          <div class="modal-box">
-            <h3>Create Assignment</h3>
-            <input type="text"  id="assignTitle"    placeholder="Title" class="modal-input">
-            <select id="assignClass"   class="styled-select"><option value="">Select Class</option></select>
-            <select id="assignSubject" class="styled-select"><option value="">Select Subject</option></select>
-            <select id="assignTerm"    class="styled-select">
-              <option value="">Select Term</option>
-              <option value="1st Term">1st Term</option>
-              <option value="2nd Term">2nd Term</option>
-              <option value="3rd Term">3rd Term</option>
-            </select>
+          <div class="modal-box" style="max-width:620px;max-height:90vh;overflow-y:auto">
+            <h3 id="assignModalHeading">Create Assignment</h3>
+
+            <input type="text" id="assignTitle" placeholder="Title" class="modal-input">
+
+            <!-- Class checkboxes -->
+            <label class="field-label">Classes</label>
+            <div id="assignClassList" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:var(--bg3);border:1px solid var(--card-border);border-radius:10px;max-height:140px;overflow-y:auto;min-height:44px;align-items:flex-start;align-content:flex-start"></div>
+
             <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <div class="field-group" style="flex:1;min-width:120px">
+              <div class="field-group" style="flex:1;min-width:140px">
+                <label>Subject</label>
+                <select id="assignSubject" class="styled-select"><option value="">Select Subject</option></select>
+              </div>
+              <div class="field-group" style="flex:1;min-width:140px">
+                <label>Term</label>
+                <select id="assignTerm" class="styled-select">
+                  <option value="">Select Term</option>
+                  <option value="1st Term">1st Term</option>
+                  <option value="2nd Term">2nd Term</option>
+                  <option value="3rd Term">3rd Term</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Assignment type -->
+            <label class="field-label">Assignment Type</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <label class="type-chip"><input type="radio" name="assignType" value="text" checked> ✏️ Text Answer</label>
+              <label class="type-chip"><input type="radio" name="assignType" value="mcq"> 🔘 Objectives (MCQ)</label>
+              <label class="type-chip"><input type="radio" name="assignType" value="file"> 📎 File Upload</label>
+            </div>
+
+            <!-- MCQ builder (shown only when type=mcq) -->
+            <div id="assignMcqSection" style="display:none">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Questions</span>
+                <button type="button" class="action-btn" id="addMcqQuestion" style="padding:5px 12px;font-size:12px">+ Add Question</button>
+              </div>
+              <div id="mcqQuestionsList" style="display:flex;flex-direction:column;gap:14px"></div>
+            </div>
+
+            <!-- Teacher file attachment (shown for all types, optional) -->
+            <div id="assignFileSection">
+              <label class="field-label">Attach File / Image <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
+              <input type="file" id="assignFile" class="styled-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif">
+              <div id="assignFilePreview" style="display:none;margin-top:6px"></div>
+              <p id="assignFileStatus" style="font-size:12px;color:var(--text2);display:none"></p>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field-group" style="flex:1;min-width:100px">
                 <label>Max Score</label>
                 <input type="number" id="assignMaxScore" value="100" min="1" class="styled-input" style="width:100%">
               </div>
@@ -429,10 +469,12 @@
                 <input type="datetime-local" id="assignDue" class="styled-input" style="width:100%">
               </div>
             </div>
+
             <textarea id="assignDesc" placeholder="Instructions (optional)" class="modal-textarea"></textarea>
+
             <div class="modal-btns">
               <button class="action-btn" id="saveAssignBtn">Save</button>
-              <button class="cancel-btn"  id="closeAssignModal">Cancel</button>
+              <button class="cancel-btn" id="closeAssignModal">Cancel</button>
             </div>
           </div>
         </div>
@@ -470,6 +512,103 @@
               <button class="action-btn" id="confirmGradeBtn">✅ Save Grade &amp; Notify Student</button>
             </div>
             <p id="gradeStatus" style="font-size:12px;margin-top:8px;display:none"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ TESTS / CA ═══ -->
+      <section class="section" id="sec-tests">
+        <div class="card full-card">
+          <div class="section-header-row">
+            <h3>Tests &amp; CA</h3>
+            <button class="action-btn" id="openTestModal">+ Create Test</button>
+          </div>
+          <div class="tab-row">
+            <button class="tab-btn active" data-tab="tests-created">My Tests</button>
+            <button class="tab-btn"        data-tab="tests-results">Results</button>
+          </div>
+          <div id="tab-tests-created" class="tab-pane active">
+            <div id="testsList"><p class="empty-msg">No tests created yet.</p></div>
+          </div>
+          <div id="tab-tests-results" class="tab-pane">
+            <div id="testsResultsList"><p class="empty-msg">Select a test above to view results.</p></div>
+          </div>
+        </div>
+
+        <!-- Create Test Modal -->
+        <div class="modal-overlay" id="testModal">
+          <div class="modal-box" style="max-width:660px;max-height:92vh;overflow-y:auto">
+            <h3 id="testModalHeading">Create Test</h3>
+            <input type="text" id="testTitle" placeholder="Test title (e.g. 1st CA — Mathematics)" class="modal-input">
+
+            <label class="field-label">Classes</label>
+            <div id="testClassList" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:var(--bg3);border:1px solid var(--card-border);border-radius:10px;max-height:120px;overflow-y:auto;min-height:44px;align-items:flex-start;align-content:flex-start"></div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field-group" style="flex:1;min-width:140px">
+                <label>Subject</label>
+                <select id="testSubject" class="styled-select"><option value="">Select Subject</option></select>
+              </div>
+              <div class="field-group" style="flex:1;min-width:140px">
+                <label>Term</label>
+                <select id="testTerm" class="styled-select">
+                  <option value="">Select Term</option>
+                  <option value="1st Term">1st Term</option>
+                  <option value="2nd Term">2nd Term</option>
+                  <option value="3rd Term">3rd Term</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="field-label">Mode</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <label class="type-chip"><input type="radio" name="testMode" value="deadline" checked> 📅 Deadline-based</label>
+              <label class="type-chip"><input type="radio" name="testMode" value="live"> 🔴 Live (teacher starts it)</label>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field-group" style="flex:1;min-width:120px">
+                <label>Duration (mins)</label>
+                <input type="number" id="testDuration" value="30" min="1" class="styled-input" style="width:100%">
+              </div>
+              <div class="field-group" id="testDeadlineGroup" style="flex:2;min-width:180px">
+                <label>Deadline</label>
+                <input type="datetime-local" id="testDeadline" class="styled-input" style="width:100%">
+              </div>
+              <div class="field-group" style="flex:1;min-width:100px">
+                <label>Max Score</label>
+                <input type="number" id="testMaxScore" value="30" min="1" class="styled-input" style="width:100%">
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;margin-top:4px">
+              <span class="field-label" style="margin-bottom:0">Questions</span>
+              <div style="display:flex;gap:8px">
+                <button type="button" class="action-btn" id="addTestMcq"  style="padding:5px 12px;font-size:12px">+ Objective</button>
+                <button type="button" style="padding:5px 12px;font-size:12px;border:1px solid var(--card-border);background:var(--bg3);color:var(--text);border-radius:8px;cursor:pointer" id="addTestText">+ Theory</button>
+              </div>
+            </div>
+            <div id="testQuestionsList" style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px"></div>
+
+            <label class="field-label">Attach File <span style="font-weight:400;text-transform:none;font-size:11px">(optional — e.g. passage, diagram)</span></label>
+            <input type="file" id="testFile" class="styled-input" accept=".pdf,.jpg,.jpeg,.png">
+            <p id="testFileStatus" style="font-size:12px;color:var(--text2);display:none;margin-top:4px"></p>
+
+            <div class="modal-btns" style="margin-top:16px">
+              <button class="action-btn" id="saveTestBtn">Save Test</button>
+              <button class="cancel-btn" id="closeTestModal">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Results Modal -->
+        <div class="modal-overlay" id="testResultsModal">
+          <div class="modal-box" style="max-width:700px;max-height:90vh;overflow-y:auto">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <h3 id="testResultsTitle">Test Results</h3>
+              <button class="cancel-btn" id="closeTestResultsModal" style="padding:6px 12px">✕</button>
+            </div>
+            <div id="testResultsContent"><p class="empty-msg">Loading...</p></div>
           </div>
         </div>
       </section>
