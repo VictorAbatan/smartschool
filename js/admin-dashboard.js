@@ -108,8 +108,10 @@ notifBtn?.addEventListener("click", e => {
   const open = notifPanel.style.display === "block";
   notifPanel.style.display = open ? "none" : "block";
 });
+
+// FIX 1: Guard notifPanel before accessing .style (was crashing when element didn't exist)
 document.addEventListener("click", e => {
-  if (!notifWrapper?.contains(e.target)) notifPanel.style.display = "none";
+  if (!notifWrapper?.contains(e.target) && notifPanel) notifPanel.style.display = "none";
 });
 
 function startNotifListener(school) {
@@ -121,6 +123,9 @@ function startNotifListener(school) {
     where("read", "==", false)
   );
   unsubNotif = onSnapshot(q, snap => {
+    // FIX 2: Guard notifList — it may be null if the panel element isn't in the DOM
+    if (!notifList) return;
+
     const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     notifs.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 
@@ -449,6 +454,13 @@ async function loadStudents() {
     }
 
     renderStudents(students);
+
+    // FIX 3: Warn if fewer students loaded than the overview stat suggests.
+    // This catches school name mismatches in Firestore (e.g. "Bright Academy" vs "bright academy")
+    const overviewCount = parseInt(document.getElementById("statStudents")?.textContent || "0");
+    if (students.length < overviewCount) {
+      toast(`⚠️ Showing ${students.length} of ${overviewCount} students. Some may have a different school name spelling in Firestore.`, "warning", 7000);
+    }
 
     function applyFilters() {
       const cls = document.getElementById("studentClassFilter")?.value || "";
