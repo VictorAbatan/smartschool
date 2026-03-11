@@ -417,7 +417,7 @@ function populateDropdowns(data) {
   const subjects = data.subjectsTaught  || [];
 
   const classIds   = ["scoresClassFilter","attendClassFilter",
-                      "assignClass","resClass","studentsClassFilter","submitClassFilter"];
+                      "resClass","studentsClassFilter","submitClassFilter"];
   const subjectIds = ["scoresSubjectFilter","assignSubject","resSubject","submitSubjectFilter"];
 
   classIds.forEach(id => {
@@ -425,6 +425,16 @@ function populateDropdowns(data) {
     el.innerHTML = `<option value="">${id === "studentsClassFilter" ? "All Classes" : "Select Class"}</option>`;
     classes.forEach(c => el.innerHTML += `<option value="${c}">${c}</option>`);
   });
+
+  // Build assignClassList checkboxes for multi-class assignment
+  const assignClassList = document.getElementById("assignClassList");
+  if (assignClassList) {
+    assignClassList.innerHTML = classes.map(c =>
+      `<label style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--bg2);border:1px solid var(--card-border);border-radius:8px;font-size:12px;cursor:pointer">
+        <input type="checkbox" class="assign-class-chk" value="${c}"> ${c}
+      </label>`
+    ).join("");
+  }
 
   subjectIds.forEach(id => {
     const el = document.getElementById(id); if (!el) return;
@@ -442,7 +452,7 @@ async function loadDashboardStats() {
   if (!classes.length) return;
   try {
     const ss = await getDocs(query(collection(db,"users"),
-      where("role","==","student"), where("studentClass","in",classes)));
+      where("role","==","student"), where("school","==",teacherData.school), where("studentClass","in",classes)));
     const sEl = document.getElementById("statStudents"); if (sEl) sEl.textContent = ss.size;
 
     const as = await getDocs(query(collection(db,"assignments"),
@@ -667,7 +677,7 @@ async function loadStudents(filterClass = "") {
   try {
     const list = filterClass ? [filterClass] : classes;
     const snap = await getDocs(query(collection(db,"users"),
-      where("role","==","student"), where("studentClass","in",list)));
+      where("role","==","student"), where("school","==",teacherData.school), where("studentClass","in",list)));
     if (snap.empty) { tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">No students found.</td></tr>`; return; }
     tbody.innerHTML = ""; let i = 1;
     snap.forEach(d => {
@@ -811,7 +821,7 @@ async function renderScoresRows() {
   const attendMap = {};
   if (isClassTeacher) {
     try {
-      const attSnap = await getDocs(query(collection(db,"attendance"), where("class","==",cls)));
+      const attSnap = await getDocs(query(collection(db,"attendance"), where("school","==",teacherData.school), where("class","==",cls)));
       loadedStudents.forEach(st => {
         let present = 0, total = 0;
         attSnap.forEach(d => {
@@ -963,7 +973,7 @@ document.getElementById("loadScoresBtn")?.addEventListener("click", async () => 
   // Load students
   try {
     const snap = await getDocs(query(collection(db,"users"),
-      where("role","==","student"), where("studentClass","==",cls)));
+      where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls)));
     if (snap.empty) { toast(`No students in ${cls}.`, "warning"); return; }
     snap.forEach(d => loadedStudents.push({ id: d.id, name: d.data().name || "--" }));
   } catch (err) { toast("Load failed: " + err.message, "error"); return; }
@@ -1006,7 +1016,7 @@ document.getElementById("loadSubmitBtn")?.addEventListener("click", async () => 
 
   try {
     const studSnap = await getDocs(query(collection(db,"users"),
-      where("role","==","student"), where("studentClass","==",cls)));
+      where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls)));
     if (studSnap.empty) { preview.innerHTML = `<p class="empty-msg">No students in ${cls}.</p>`; return; }
 
     const rows = [];
@@ -1104,7 +1114,7 @@ document.getElementById("submitToClassTeacherBtn")?.addEventListener("click", as
     // Notify each student that their result is available
     try {
       const studSnap = await getDocs(query(collection(db,"users"),
-        where("role","==","student"), where("studentClass","==",cls)));
+        where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls)));
       await Promise.all(studSnap.docs.map(sd =>
         addDoc(collection(db,"notifications"), {
           userId: sd.id, type: "result",
@@ -1143,7 +1153,7 @@ document.getElementById("loadCollateBtn")?.addEventListener("click", async () =>
   try {
     // Load all students in class
     const studSnap = await getDocs(query(collection(db,"users"),
-      where("role","==","student"), where("studentClass","==",cls)));
+      where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls)));
     if (studSnap.empty) { container.innerHTML = `<p class="empty-msg">No students in ${cls}.</p>`; return; }
 
     // Load all score submissions tracking (for "submitted" badge)
@@ -1155,7 +1165,7 @@ document.getElementById("loadCollateBtn")?.addEventListener("click", async () =>
       where("class","==",cls), where("term","==",term)));
 
     // Load attendance summary (class roll — official only)
-    const attSnap = await getDocs(query(collection(db,"attendance"), where("class","==",cls)));
+    const attSnap = await getDocs(query(collection(db,"attendance"), where("school","==",teacherData.school), where("class","==",cls)));
 
     // Build score index: [studentId][subject] = scoreDoc
     const scoreIndex = {};
@@ -1197,7 +1207,7 @@ document.getElementById("loadCollateBtn")?.addEventListener("click", async () =>
     studSnap.forEach(d => { assignBySubject[d.id] = {}; });
 
     // Load all assignments for this class, then their submissions
-    const allAssignSnap = await getDocs(query(collection(db,"assignments"), where("class","==",cls)));
+    const allAssignSnap = await getDocs(query(collection(db,"assignments"), where("school","==",teacherData.school), where("class","==",cls)));
     for (const ad of allAssignSnap.docs) {
       const a = ad.data();
       const subj = a.subject;
@@ -1369,8 +1379,8 @@ async function loadReportStudentList() {
   try {
     const cls = teacherData.mainClass;
     const [studSnap, savedSnap] = await Promise.all([
-      getDocs(query(collection(db,"users"), where("role","==","student"), where("studentClass","==",cls))),
-      getDocs(query(collection(db,"savedReportCards"), where("class","==",cls), where("term","==",term)))
+      getDocs(query(collection(db,"users"), where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls))),
+      getDocs(query(collection(db,"savedReportCards"), where("school","==",teacherData.school), where("class","==",cls), where("term","==",term)))
     ]);
     if (studSnap.empty) { container.innerHTML = `<p class="empty-msg">No students in ${cls}.</p>`; return; }
 
@@ -1480,7 +1490,7 @@ async function openReportPreview(uid, name, term, savedData) {
 
     // Calculate position
     const allSnap = await getDocs(query(collection(db,"users"),
-      where("role","==","student"), where("studentClass","==",cls)));
+      where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls)));
     const totals = [];
     for (const sd of allSnap.docs) {
       const sq = await getDocs(query(collection(db,"scores"),
@@ -1492,7 +1502,7 @@ async function openReportPreview(uid, name, term, savedData) {
     const ordinal = pos===1?"1st":pos===2?"2nd":pos===3?"3rd":`${pos}th`;
 
     // Load class attendance (official daily roll)
-    const attSnap = await getDocs(query(collection(db,"attendance"), where("class","==",cls)));
+    const attSnap = await getDocs(query(collection(db,"attendance"), where("school","==",teacherData.school), where("class","==",cls)));
     let present = 0, total = 0;
     attSnap.forEach(d => {
       const rec = d.data().records || {};
@@ -1793,7 +1803,7 @@ document.getElementById("loadAttendBtn")?.addEventListener("click", async () => 
 
   try {
     // Session count for this class
-    const allSnap = await getDocs(query(collection(db,"attendance"), where("class","==",cls)));
+    const allSnap = await getDocs(query(collection(db,"attendance"), where("school","==",teacherData.school), where("class","==",cls)));
     if (summary) {
       summary.style.display = "block";
       const sc = document.getElementById("termSessionCount");
@@ -1807,7 +1817,7 @@ document.getElementById("loadAttendBtn")?.addEventListener("click", async () => 
 
     // Load students
     const studSnap = await getDocs(query(collection(db,"users"),
-      where("role","==","student"), where("studentClass","==",cls)));
+      where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls)));
     if (studSnap.empty) { container.innerHTML = `<p class="empty-msg">No students in ${cls}.</p>`; return; }
 
     const table = document.createElement("table"); table.className = "data-table";
@@ -1865,7 +1875,7 @@ document.getElementById("saveAttendBtn")?.addEventListener("click", async () => 
     });
     if (stEl) { stEl.textContent = "✅ Saved!"; stEl.style.color = "#4ade80"; }
     toast("Attendance saved!", "success");
-    const allAtt = await getDocs(query(collection(db,"attendance"), where("class","==",cls)));
+    const allAtt = await getDocs(query(collection(db,"attendance"), where("school","==",teacherData.school), where("class","==",cls)));
     const sc = document.getElementById("termSessionCount"); if (sc) sc.textContent = allAtt.size;
   } catch (err) { toast("Failed: " + err.message, "error"); }
   finally { btn.textContent = "💾 Save Attendance"; btn.disabled = false; }
@@ -1880,7 +1890,6 @@ let editingAssignId = null;
 function openAssignModal(existing = null) {
   editingAssignId = existing?.id || null;
   const titleEl    = document.getElementById("assignTitle");
-  const classEl    = document.getElementById("assignClass");
   const subjectEl  = document.getElementById("assignSubject");
   const termEl     = document.getElementById("assignTerm");
   const maxEl      = document.getElementById("assignMaxScore");
@@ -1893,12 +1902,16 @@ function openAssignModal(existing = null) {
     if (heading)   heading.textContent   = "Edit Assignment";
     if (saveBtn)   saveBtn.textContent   = "Save Changes";
     if (titleEl)   titleEl.value         = existing.title   || "";
-    if (classEl)   classEl.value         = existing.class   || "";
     if (subjectEl) subjectEl.value       = existing.subject || "";
     if (termEl)    termEl.value          = existing.term    || "";
     if (maxEl)     maxEl.value           = existing.maxScore|| 100;
     if (dueEl)     dueEl.value           = existing.due     || "";
     if (descEl)    descEl.value          = existing.description || "";
+    // Pre-check classes for existing assignment
+    const existingClasses = existing.classes || (existing.class ? [existing.class] : []);
+    document.querySelectorAll(".assign-class-chk").forEach(chk => {
+      chk.checked = existingClasses.includes(chk.value);
+    });
   } else {
     if (heading)   heading.textContent   = "Create Assignment";
     if (saveBtn)   saveBtn.textContent   = "Save";
@@ -1906,8 +1919,8 @@ function openAssignModal(existing = null) {
     if (descEl)    descEl.value          = "";
     if (dueEl)     dueEl.value           = "";
     if (maxEl)     maxEl.value           = "100";
-    // Default term to 1st Term if nothing selected
     if (termEl && !termEl.value) termEl.value = "1st Term";
+    document.querySelectorAll(".assign-class-chk").forEach(chk => chk.checked = false);
   }
   assignModal?.classList.add("open");
 }
@@ -1933,13 +1946,13 @@ document.querySelectorAll("#sec-assignments .tab-btn").forEach(btn => {
 
 document.getElementById("saveAssignBtn")?.addEventListener("click", async () => {
   const title    = (document.getElementById("assignTitle")?.value    || "").trim();
-  const cls      =  document.getElementById("assignClass")?.value    || "";
+  const selectedClasses = [...document.querySelectorAll(".assign-class-chk:checked")].map(c => c.value);
   const subject  =  document.getElementById("assignSubject")?.value  || "";
   const term     =  document.getElementById("assignTerm")?.value     || "";
   const due      =  document.getElementById("assignDue")?.value      || "";
   const desc     = (document.getElementById("assignDesc")?.value     || "").trim();
   const maxScore =  parseInt(document.getElementById("assignMaxScore")?.value) || 100;
-  if (!title || !cls || !subject || !term) { toast("Fill all required fields including Term.", "warning"); return; }
+  if (!title || !selectedClasses.length || !subject || !term) { toast("Fill all required fields and select at least one class.", "warning"); return; }
   const btn = document.getElementById("saveAssignBtn");
   btn.textContent = "Saving..."; btn.disabled = true;
   try {
@@ -1949,25 +1962,30 @@ document.getElementById("saveAssignBtn")?.addEventListener("click", async () => 
         { title, class:cls, subject, term, due:due||null, description:desc, maxScore }, { merge:true });
       toast("Assignment updated!", "success");
     } else {
-      // Create new
-      await addDoc(collection(db,"assignments"), {
-        title, class:cls, subject, term, due:due||null, description:desc, maxScore,
-        teacherId:teacherData._uid, teacherName:teacherData.name,
-        school:teacherData.school||"", closed:false, createdAt:serverTimestamp()
-      });
-      // Notify all students in the class
+      // Create one assignment doc per selected class
+      await Promise.all(selectedClasses.map(cls =>
+        addDoc(collection(db,"assignments"), {
+          title, class:cls, classes:selectedClasses, subject, term, due:due||null,
+          description:desc, maxScore, teacherId:teacherData._uid,
+          teacherName:teacherData.name, school:teacherData.school||"",
+          closed:false, createdAt:serverTimestamp()
+        })
+      ));
+      // Notify students in all selected classes
       try {
-        const studSnap = await getDocs(query(collection(db,"users"),
-          where("role","==","student"), where("studentClass","==",cls)));
-        await Promise.all(studSnap.docs.map(sd =>
-          addDoc(collection(db,"notifications"), {
-            userId: sd.id, type: "assignment",
-            message: `📌 New assignment: "${title}" for ${subject} (${term})${due ? ` — due ${due.split("T")[0]}` : ""}`,
-            read: false, createdAt: serverTimestamp()
-          })
-        ));
+        await Promise.all(selectedClasses.map(async cls => {
+          const studSnap = await getDocs(query(collection(db,"users"),
+            where("role","==","student"), where("school","==",teacherData.school), where("studentClass","==",cls)));
+          return Promise.all(studSnap.docs.map(sd =>
+            addDoc(collection(db,"notifications"), {
+              userId: sd.id, type: "assignment",
+              message: `📌 New assignment: "${title}" for ${subject} (${term})${due ? ` — due ${due.split("T")[0]}` : ""}`,
+              read: false, createdAt: serverTimestamp()
+            })
+          ));
+        }));
       } catch {}
-      toast("Assignment created!", "success");
+      toast(`Assignment created for ${selectedClasses.join(", ")}!`, "success");
     }
     assignModal.classList.remove("open");
     editingAssignId = null;

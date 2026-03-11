@@ -108,8 +108,6 @@ notifBtn?.addEventListener("click", e => {
   const open = notifPanel.style.display === "block";
   notifPanel.style.display = open ? "none" : "block";
 });
-
-// FIX 1: Guard notifPanel before accessing .style (was crashing when element didn't exist)
 document.addEventListener("click", e => {
   if (!notifWrapper?.contains(e.target) && notifPanel) notifPanel.style.display = "none";
 });
@@ -123,9 +121,6 @@ function startNotifListener(school) {
     where("read", "==", false)
   );
   unsubNotif = onSnapshot(q, snap => {
-    // FIX 2: Guard notifList — it may be null if the panel element isn't in the DOM
-    if (!notifList) return;
-
     const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     notifs.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 
@@ -137,6 +132,7 @@ function startNotifListener(school) {
     }
 
     // Panel list
+    if (!notifList) return;
     if (notifs.length === 0) {
       notifList.innerHTML = `<p style="padding:16px;font-size:13px;color:var(--text2)">No new notifications</p>`;
       return;
@@ -207,20 +203,26 @@ function fillUI() {
   const name    = adminData.name   || "Principal";
   const initial = school[0].toUpperCase();
 
-  document.getElementById("sbName").textContent        = name;
-  document.getElementById("sbSchoolName").textContent  = school;
+  const sbNameEl = document.getElementById("sbName");
+  if (sbNameEl) sbNameEl.textContent = name;
+  const sbSchoolEl = document.getElementById("sbSchoolName");
+  if (sbSchoolEl) sbSchoolEl.textContent = school;
   // sbLogoFallback is now the SmartSchool SVG icon — no textContent update needed
 
-  document.getElementById("schoolBannerName").textContent   = school;
+  const bannerEl = document.getElementById("schoolBannerName");
+  if (bannerEl) bannerEl.textContent = school;
   // topbarLogoFallback is now an SVG img — no textContent needed
-  document.getElementById("topbarPrincipalName").textContent = name;
-  document.getElementById("topbarDate").textContent =
+  const topbarNameEl = document.getElementById("topbarPrincipalName");
+  if (topbarNameEl) topbarNameEl.textContent = name;
+  const topbarDateEl = document.getElementById("topbarDate");
+  if (topbarDateEl) topbarDateEl.textContent =
     new Date().toLocaleDateString("en-NG", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
 
   const settingsCode = document.getElementById("settingsAdminCode");
   if (settingsCode) settingsCode.textContent = schoolData?.adminCode || "——";
 
-  document.getElementById("welcomeMsg").textContent =
+  const welcomeEl = document.getElementById("welcomeMsg");
+  if (welcomeEl) welcomeEl.textContent =
     `Welcome back, ${name.split(" ")[0]}. Here's what's happening at ${school}.`;
 
   if (schoolData?.logoUrl) applySchoolLogo(schoolData.logoUrl);
@@ -281,10 +283,14 @@ async function loadOverview() {
       getDocs(query(collection(db,"savedReportCards"), where("school","==",school)))
     ]);
 
-    document.getElementById("statTeachers").textContent    = teachersSnap.size;
-    document.getElementById("statStudents").textContent    = studentsSnap.size;
-    document.getElementById("statAssignments").textContent = assignSnap.size;
-    document.getElementById("statReports").textContent     = reportsSnap.size;
+    const statTeachersEl = document.getElementById("statTeachers");
+    const statStudentsEl = document.getElementById("statStudents");
+    const statAssignmentsEl = document.getElementById("statAssignments");
+    const statReportsEl = document.getElementById("statReports");
+    if (statTeachersEl) statTeachersEl.textContent = teachersSnap.size;
+    if (statStudentsEl) statStudentsEl.textContent = studentsSnap.size;
+    if (statAssignmentsEl) statAssignmentsEl.textContent = assignSnap.size;
+    if (statReportsEl) statReportsEl.textContent = reportsSnap.size;
 
     // Populate class filters
     const classes = new Set();
@@ -312,20 +318,22 @@ async function loadOverview() {
     });
     activity.sort((a, b) => b.time - a.time);
 
-    if (activity.length === 0) {
-      actEl.innerHTML = `<p class="empty-msg">No recent activity yet.</p>`;
-    } else {
-      actEl.innerHTML = "";
-      activity.slice(0, 8).forEach(a => {
-        const item = document.createElement("div");
-        item.style.cssText = "display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--card-border)";
-        item.innerHTML = `
-          <span style="font-size:11px;color:var(--text2);flex-shrink:0;margin-top:2px;min-width:80px">
-            ${a.time > new Date(1000) ? a.time.toLocaleDateString("en-NG") : "—"}
-          </span>
-          <span style="font-size:13px;color:var(--text)">${a.text}</span>`;
-        actEl.appendChild(item);
-      });
+    if (actEl) {
+      if (activity.length === 0) {
+        actEl.innerHTML = `<p class="empty-msg">No recent activity yet.</p>`;
+      } else {
+        actEl.innerHTML = "";
+        activity.slice(0, 8).forEach(a => {
+          const item = document.createElement("div");
+          item.style.cssText = "display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--card-border)";
+          item.innerHTML = `
+            <span style="font-size:11px;color:var(--text2);flex-shrink:0;margin-top:2px;min-width:80px">
+              ${a.time > new Date(1000) ? a.time.toLocaleDateString("en-NG") : "—"}
+            </span>
+            <span style="font-size:13px;color:var(--text)">${a.text}</span>`;
+          actEl.appendChild(item);
+        });
+      }
     }
   } catch (err) { console.error("Overview error:", err); }
   clearOldActivity();
@@ -454,13 +462,6 @@ async function loadStudents() {
     }
 
     renderStudents(students);
-
-    // FIX 3: Warn if fewer students loaded than the overview stat suggests.
-    // This catches school name mismatches in Firestore (e.g. "Bright Academy" vs "bright academy")
-    const overviewCount = parseInt(document.getElementById("statStudents")?.textContent || "0");
-    if (students.length < overviewCount) {
-      toast(`⚠️ Showing ${students.length} of ${overviewCount} students. Some may have a different school name spelling in Firestore.`, "warning", 7000);
-    }
 
     function applyFilters() {
       const cls = document.getElementById("studentClassFilter")?.value || "";

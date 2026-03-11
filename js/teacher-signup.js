@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, addDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, addDoc, collection, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAk8lgaU1c7n2-Mt3TetoUE2JGJDA7U6F8",
@@ -200,6 +200,56 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
   document.getElementById("signupBtn").disabled = true;
 
   try {
+    // Prevent duplicate class teachers
+    const mainClassVal = selectedRole === "both" ? getMainClass() : null;
+    if (mainClassVal) {
+      const dupSnap = await getDocs(query(
+        collection(db, "users"),
+        where("role", "==", "teacher"),
+        where("teacherType", "==", "both"),
+        where("mainClass", "==", mainClassVal),
+        where("school", "==", verifiedSchool.school)
+      ));
+      if (!dupSnap.empty) {
+        loadingEl.style.display = "none";
+        document.getElementById("signupBtn").disabled = false;
+        errorEl.textContent = `A class teacher for ${mainClassVal} already exists at ${verifiedSchool.school}. Each class can only have one class teacher.`;
+        return;
+      }
+    }
+
+    // Prevent duplicate subject-class assignments
+    // Check: for each subject this teacher wants to teach, and each class they're teaching,
+    // make sure no existing teacher at this school already teaches that subject for that class.
+    const subjectsVal = getSubjectsTaught();
+    const classesVal  = getClassesTeaching();
+    if (subjectsVal.length && classesVal.length) {
+      const allTeachersSnap = await getDocs(query(
+        collection(db, "users"),
+        where("role", "==", "teacher"),
+        where("school", "==", verifiedSchool.school)
+      ));
+      const conflicts = [];
+      allTeachersSnap.forEach(d => {
+        const t = d.data();
+        const theirClasses  = t.classesTeaching || [];
+        const theirSubjects = t.subjectsTaught  || [];
+        subjectsVal.forEach(sub => {
+          classesVal.forEach(cls => {
+            if (theirClasses.includes(cls) && theirSubjects.includes(sub)) {
+              conflicts.push(`${sub} for ${cls} (already taught by ${t.name || t.email})`);
+            }
+          });
+        });
+      });
+      if (conflicts.length) {
+        loadingEl.style.display = "none";
+        document.getElementById("signupBtn").disabled = false;
+        errorEl.textContent = `Conflict: ${conflicts.slice(0,3).join("; ")}${conflicts.length > 3 ? ` and ${conflicts.length - 3} more` : ""}. Remove these from your selection.`;
+        return;
+      }
+    }
+
     const userCred = await createUserWithEmailAndPassword(auth,
       document.getElementById("email").value.trim(), password);
     const uid = userCred.user.uid;

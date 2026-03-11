@@ -895,7 +895,7 @@ async function loadAssignments() {
 
   try {
     const [aSnap, sSnap] = await Promise.all([
-      getDocs(query(collection(db,"assignments"), where("class","==",cls))),
+      getDocs(query(collection(db,"assignments"), where("school","==",studentData.school), where("class","==",cls))),
       getDocs(query(collection(db,"assignmentSubmissions"), where("studentId","==",uid)))
     ]);
 
