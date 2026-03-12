@@ -1015,6 +1015,56 @@ function buildStudentAssignCard(a, now, uid) {
 
   const card = document.createElement("div");
   card.className = "assign-card";
+
+  // Build submit area based on assignment type
+  const isMcq  = a.assignType === "mcq";
+  const isFile = a.assignType === "file";
+
+  let submitAreaHtml = "";
+  if (locked) {
+    submitAreaHtml = `<div style="padding:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;font-size:13px;color:#f87171">
+      🔒 Submissions are closed for this assignment.
+    </div>`;
+  } else if (isMcq) {
+    const questions = a.questions || [];
+    submitAreaHtml = `<div class="submit-area">
+      <p style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Answer all questions — select the correct option:</p>
+      ${questions.map((q, qi) => `
+        <div style="background:var(--bg3);border:1px solid var(--card-border);border-radius:10px;padding:14px;margin-bottom:10px">
+          <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">Q${qi+1}. ${q.question}</p>
+          ${(q.options||[]).filter(o=>o.trim()).map((opt, oi) => `
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--card-border);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;color:var(--text);transition:border-color .15s">
+              <input type="radio" name="mcq_a${a.id}_q${qi}" value="${oi}" style="accent-color:var(--accent)"> ${opt}
+            </label>`).join("")}
+        </div>`).join("")}
+      ${a.attachmentUrl ? `<a href="${a.attachmentUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);margin-bottom:12px">📎 View attached file</a>` : ""}
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <button class="submit-btn-main do-submit-btn" data-id="${a.id}" data-title="${a.title}" data-teacher="${a.teacherId}">
+          📬 Submit Answers
+        </button>
+        <span class="submit-progress" style="font-size:12px;color:var(--text2)"></span>
+      </div>
+    </div>`;
+  } else {
+    submitAreaHtml = `<div class="submit-area">
+      ${a.attachmentUrl ? `<a href="${a.attachmentUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);margin-bottom:12px">📎 View attached file</a><br>` : ""}
+      ${!isFile ? `<div class="field-group">
+        <label>Your Answer <span style="color:var(--text2);font-size:10px">(optional if uploading)</span></label>
+        <textarea class="submit-text-input" placeholder="Type your answer here..." rows="3"></textarea>
+      </div>` : ""}
+      <div class="field-group">
+        <label>Upload File <span style="color:var(--text2);font-size:10px">${isFile ? "(required)" : "(optional if typing)"}</span></label>
+        <input type="file" class="submit-file-input styled-input" accept=".pdf,.doc,.docx,.jpg,.png,.txt">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <button class="submit-btn-main do-submit-btn" data-id="${a.id}" data-title="${a.title}" data-teacher="${a.teacherId}">
+          📬 Submit Assignment
+        </button>
+        <span class="submit-progress" style="font-size:12px;color:var(--text2)"></span>
+      </div>
+    </div>`;
+  }
+
   card.innerHTML = `
     <div class="assign-card-header">
       <div class="assign-card-left">
@@ -1023,40 +1073,18 @@ function buildStudentAssignCard(a, now, uid) {
           <span>📚 ${a.subject}</span>
           <span class="upcoming-due ${dueClass}">${dueLabel}</span>
           <span>👤 ${a.teacherName||"Teacher"}</span>
+          ${isMcq ? `<span style="background:rgba(99,102,241,0.15);color:#818cf8;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">🔘 MCQ</span>` : ""}
+          ${isFile ? `<span style="background:rgba(99,102,241,0.15);color:#818cf8;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700">📎 File</span>` : ""}
         </div>
       </div>
       <div class="assign-card-right">
-        ${locked
-          ? `<span class="assign-status-badge status-late">🔒 Closed</span>`
-          : `<span class="assign-status-badge status-pending">Pending</span>`
-        }
+        ${locked ? `<span class="assign-status-badge status-late">🔒 Closed</span>` : `<span class="assign-status-badge status-pending">Pending</span>`}
         <span class="assign-chevron">▼</span>
       </div>
     </div>
     <div class="assign-card-body">
       <p class="assign-desc">${a.description || "No description provided."}</p>
-      ${locked
-        ? `<div style="padding:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;font-size:13px;color:#f87171">
-             🔒 Submissions are closed for this assignment.
-           </div>`
-        : `<div class="submit-area">
-            <div class="field-group">
-              <label>Your Answer <span style="color:var(--text2);font-size:10px">(optional if uploading)</span></label>
-              <textarea class="submit-text-input" placeholder="Type your answer here..." rows="3"></textarea>
-            </div>
-            <div class="field-group">
-              <label>Upload File <span style="color:var(--text2);font-size:10px">(optional if typing)</span></label>
-              <input type="file" class="submit-file-input styled-input" accept=".pdf,.doc,.docx,.jpg,.png,.txt">
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-              <button class="submit-btn-main do-submit-btn"
-                data-id="${a.id}" data-title="${a.title}" data-teacher="${a.teacherId}">
-                📬 Submit Assignment
-              </button>
-              <span class="submit-progress" style="font-size:12px;color:var(--text2)"></span>
-            </div>
-          </div>`
-      }
+      ${submitAreaHtml}
     </div>`;
 
   card.querySelector(".assign-card-header").addEventListener("click", () => {
@@ -1067,11 +1095,31 @@ function buildStudentAssignCard(a, now, uid) {
     card.querySelector(".do-submit-btn")?.addEventListener("click", async e => {
       e.stopPropagation();
       const btn      = e.currentTarget;
-      const textVal  = card.querySelector(".submit-text-input").value.trim();
-      const fileVal  = card.querySelector(".submit-file-input").files[0];
       const progress = card.querySelector(".submit-progress");
 
-      if (!textVal && !fileVal) { toast("Please type an answer or upload a file.", "warning"); return; }
+      // Collect answers based on type
+      let textVal = "", fileVal = null, mcqAnswers = null, mcqScore = null;
+
+      if (isMcq) {
+        // Collect MCQ radio selections
+        const questions = a.questions || [];
+        mcqAnswers = {};
+        let allAnswered = true;
+        questions.forEach((q, qi) => {
+          const sel = card.querySelector(`input[name="mcq_a${a.id}_q${qi}"]:checked`);
+          if (sel) mcqAnswers[qi] = parseInt(sel.value);
+          else allAnswered = false;
+        });
+        if (!allAnswered) { toast("Please answer all questions before submitting.", "warning"); return; }
+        // Auto-grade
+        let correct = 0;
+        questions.forEach((q, qi) => { if (mcqAnswers[qi] === q.correct) correct++; });
+        mcqScore = Math.round((correct / questions.length) * (a.maxScore || 100));
+      } else {
+        textVal = card.querySelector(".submit-text-input")?.value.trim() || "";
+        fileVal = card.querySelector(".submit-file-input")?.files?.[0] || null;
+        if (!textVal && !fileVal) { toast("Please type an answer or upload a file.", "warning"); return; }
+      }
 
       btn.disabled = true; btn.textContent = "Submitting...";
       progress.textContent = "⏳ Saving...";
@@ -1096,28 +1144,35 @@ function buildStudentAssignCard(a, now, uid) {
         await addDoc(collection(db,"assignmentSubmissions"), {
           assignmentId:    a.id,
           assignmentTitle: a.title,
+          assignType:      a.assignType || "text",
           teacherId:       a.teacherId,
           studentId:       studentData._uid,
           studentName:     studentData.name,
           class:           studentData.studentClass,
           term:            a.term || "",
           textAnswer:      textVal,
+          mcqAnswers:      mcqAnswers || null,
+          score:           mcqScore,
+          autoGraded:      isMcq,
           fileUrl, fileName,
           submittedAt: serverTimestamp()
         });
 
-        // Notify the teacher
         if (a.teacherId) {
           await addDoc(collection(db,"notifications"), {
             userId:    a.teacherId,
             type:      "submission",
-            message:   `📌 ${studentData.name} submitted "${a.title}" (${studentData.studentClass})`,
+            message:   `📌 ${studentData.name} submitted "${a.title}" (${studentData.studentClass})${mcqScore != null ? ` — Score: ${mcqScore}/${a.maxScore||100}` : ""}`,
             read:      false,
             createdAt: serverTimestamp()
           });
         }
 
-        toast(`✅ "${a.title}" submitted!`, "success");
+        if (isMcq) {
+          toast(`✅ Submitted! Your score: ${mcqScore}/${a.maxScore||100}`, "success", 5000);
+        } else {
+          toast(`✅ "${a.title}" submitted!`, "success");
+        }
         loadAssignments();
       } catch (err) {
         toast("Submission failed: " + err.message, "error");

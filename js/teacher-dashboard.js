@@ -409,6 +409,9 @@ if (slug) {
   if (ps) ps.innerHTML = (data.subjectsTaught || []).map(s => `<span class="tag">${s}</span>`).join("");
   const pc = document.getElementById("profClasses");
   if (pc) pc.innerHTML = (data.classesTeaching || []).map(c => `<span class="tag">${c}</span>`).join("");
+
+  // Signature preview — run now so it's ready when profile tab is opened
+  loadSignaturePreview();
 }
 
 /* ═══════════════════════════════════════
@@ -1923,7 +1926,17 @@ function openAssignModal(existing = null) {
     if (maxEl)     maxEl.value           = "100";
     if (termEl && !termEl.value) termEl.value = "1st Term";
     document.querySelectorAll(".assign-class-chk").forEach(chk => chk.checked = false);
+    // Reset type to text and hide conditional sections
+    const textRadio = document.querySelector("input[name='assignType'][value='text']");
+    if (textRadio) textRadio.checked = true;
+    assignMcqQuestions = [];
+    renderAssignMcq();
   }
+  const mcqSec  = document.getElementById("assignMcqSection");
+  const fileSec = document.getElementById("assignFileSection");
+  const selType = document.querySelector("input[name='assignType']:checked")?.value || "text";
+  if (mcqSec)  mcqSec.style.display  = selType === "mcq"  ? "block" : "none";
+  if (fileSec) fileSec.style.display = selType === "file" ? "block" : "none";
   assignModal?.classList.add("open");
 }
 
@@ -1996,9 +2009,11 @@ document.getElementById("addMcqQuestion")?.addEventListener("click", () => {
 
 document.querySelectorAll("input[name='assignType']").forEach(r => {
   r.addEventListener("change", e => {
-    const isMcq = e.target.value === "mcq";
-    const mcqSec = document.getElementById("assignMcqSection");
-    if (mcqSec) mcqSec.style.display = isMcq ? "block" : "none";
+    const val     = e.target.value;
+    const mcqSec  = document.getElementById("assignMcqSection");
+    const fileSec = document.getElementById("assignFileSection");
+    if (mcqSec)  mcqSec.style.display  = val === "mcq"  ? "block" : "none";
+    if (fileSec) fileSec.style.display = val === "file" ? "block" : "none";
   });
 });
 
@@ -2440,13 +2455,14 @@ function renderTestQuestions() {
   if (!container) return;
   container.innerHTML = "";
   testQuestions.forEach((q, qi) => {
+    const isLast = qi === testQuestions.length - 1;
     const card = document.createElement("div");
     card.className = q.type === "mcq" ? "mcq-card" : "theory-card";
     if (q.type === "mcq") {
       card.innerHTML = `
         <div class="mcq-card-header">
           <span class="mcq-qnum">Q${qi+1} · Objective</span>
-          <button class="remove-q-btn" data-qi="${qi}">✕</button>
+          <button class="remove-q-btn" data-qi="${qi}">✕ Remove</button>
         </div>
         <input class="mcq-question-input" placeholder="Question text..." value="${q.question||""}" data-qi="${qi}">
         <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Options — select correct answer:</div>
@@ -2454,15 +2470,25 @@ function renderTestQuestions() {
           <div class="mcq-option-row">
             <input type="radio" name="tq${qi}_correct" value="${oi}" ${q.correct===oi?"checked":""} data-qi="${qi}" data-oi="${oi}" class="tq-correct-radio">
             <input type="text" placeholder="Option ${opt}" value="${q.options[oi]||""}" data-qi="${qi}" data-oi="${oi}" class="tq-option-input">
-          </div>`).join("")}`;
+          </div>`).join("")}
+        ${isLast ? `
+        <div style="display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--card-border)">
+          <button class="action-btn add-next-mcq"  style="padding:5px 12px;font-size:12px">+ Objective</button>
+          <button style="padding:5px 12px;font-size:12px;border:1px solid var(--card-border);background:var(--bg2);color:var(--text);border-radius:8px;cursor:pointer" class="add-next-text">+ Theory</button>
+        </div>` : ""}`;
     } else {
       card.innerHTML = `
         <div class="mcq-card-header">
           <span class="mcq-qnum">Q${qi+1} · Theory</span>
-          <button class="remove-q-btn" data-qi="${qi}">✕</button>
+          <button class="remove-q-btn" data-qi="${qi}">✕ Remove</button>
         </div>
         <input class="mcq-question-input" placeholder="Question text..." value="${q.question||""}" data-qi="${qi}">
-        <div style="font-size:11px;color:var(--text2);margin-top:4px">Students will type their answer.</div>`;
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;margin-bottom:${isLast?"10px":"0"}">Students will type their answer.</div>
+        ${isLast ? `
+        <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--card-border)">
+          <button class="action-btn add-next-mcq"  style="padding:5px 12px;font-size:12px">+ Objective</button>
+          <button style="padding:5px 12px;font-size:12px;border:1px solid var(--card-border);background:var(--bg2);color:var(--text);border-radius:8px;cursor:pointer" class="add-next-text">+ Theory</button>
+        </div>` : ""}`;
     }
     container.appendChild(card);
     card.querySelector(".remove-q-btn").addEventListener("click", () => { testQuestions.splice(qi,1); renderTestQuestions(); });
@@ -2475,6 +2501,16 @@ function renderTestQuestions() {
         r.addEventListener("change", e => { testQuestions[qi].correct = parseInt(e.target.value); });
       });
     }
+    card.querySelector(".add-next-mcq")?.addEventListener("click", () => {
+      testQuestions.push({ type:"mcq", question:"", options:["","","",""], correct:0 });
+      renderTestQuestions();
+      setTimeout(() => container.lastElementChild?.scrollIntoView({ behavior:"smooth", block:"nearest" }), 50);
+    });
+    card.querySelector(".add-next-text")?.addEventListener("click", () => {
+      testQuestions.push({ type:"text", question:"" });
+      renderTestQuestions();
+      setTimeout(() => container.lastElementChild?.scrollIntoView({ behavior:"smooth", block:"nearest" }), 50);
+    });
   });
 }
 

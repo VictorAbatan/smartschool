@@ -451,8 +451,8 @@
               <div id="mcqQuestionsList" style="display:flex;flex-direction:column;gap:14px"></div>
             </div>
 
-            <!-- Teacher file attachment (shown for all types, optional) -->
-            <div id="assignFileSection">
+            <!-- Teacher file attachment (only shown when type=file) -->
+            <div id="assignFileSection" style="display:none">
               <label class="field-label">Attach File / Image <span style="font-weight:400;text-transform:none;font-size:11px">(optional)</span></label>
               <input type="file" id="assignFile" class="styled-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif">
               <div id="assignFilePreview" style="display:none;margin-top:6px"></div>
