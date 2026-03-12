@@ -1010,8 +1010,6 @@ body {
   height: auto;
   object-fit: contain;
   border-radius: 6px;
-  /* Invert so black ink signature is visible on dark background */
-  filter: brightness(0) invert(1);
 }
 body.light-mode .signature-preview { filter: none; }
 

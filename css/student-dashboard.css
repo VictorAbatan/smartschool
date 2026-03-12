@@ -1317,6 +1317,6 @@ body {
 }
 .test-option-label:has(input:checked) {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, var(--bg2));
+  background: rgba(110,231,183,0.12);
 }
 .test-option-label input { accent-color: var(--accent); flex-shrink: 0; }

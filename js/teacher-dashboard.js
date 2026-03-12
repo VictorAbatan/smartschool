@@ -2212,7 +2212,7 @@ function buildAssignCard(a) {
 const gradeModal = document.getElementById("gradeModal");
 let gradingSubId = null, gradingMaxScore = 100, gradingStudentId = null, gradingTitle = "";
 
-function openGradeModal(subId, studentName, textAnswer, fileUrl, maxScore, assignTitle, studentId, mcqAnswers, questions) {
+function openGradeModal(subId, studentName, textAnswer, fileUrl, maxScore, assignTitle, studentId, mcqAnswers, questions, existingGrade, autoGraded) {
   gradingSubId      = subId;
   gradingMaxScore   = maxScore;
   gradingStudentId  = studentId;
@@ -2234,9 +2234,15 @@ function openGradeModal(subId, studentName, textAnswer, fileUrl, maxScore, assig
   if (titleEl)    titleEl.textContent    = `Grade: ${assignTitle}`;
   if (infoEl)     infoEl.textContent     = `Student: ${studentName}  •  Max score: ${maxScore}`;
   if (scoreLabel) scoreLabel.textContent = `Score (0–${maxScore})`;
-  if (scoreInput) { scoreInput.max = maxScore; scoreInput.value = ""; }
+  if (scoreInput) { scoreInput.max = maxScore; scoreInput.value = existingGrade ?? ""; }
   if (remarkInput) remarkInput.value = "";
   if (statusEl)  { statusEl.style.display = "none"; statusEl.textContent = ""; }
+
+  // Show auto-grade notice if applicable
+  if (autoGraded && existingGrade != null && infoEl) {
+    infoEl.innerHTML = `Student: ${studentName} &nbsp;•&nbsp; Max score: ${maxScore}<br>
+      <span style="font-size:11px;color:#4ade80">✅ Auto-graded: ${existingGrade}/${maxScore} — you can review answers and adjust below.</span>`;
+  }
 
   // MCQ answers
   const hasMcq = mcqAnswers && questions && questions.length > 0;
@@ -2284,6 +2290,17 @@ function openGradeModal(subId, studentName, textAnswer, fileUrl, maxScore, assig
   if (!hasMcq && !textAnswer?.trim() && !fileUrl) {
     if (infoEl) infoEl.innerHTML = infoEl.textContent +
       `<br><span style="color:#fb923c;font-size:12px">⚠️ This student did not submit any content.</span>`;
+  }
+
+  // For MCQ: hide the manual score/remark inputs and Save button — already auto-graded
+  const gradeInputRow = document.getElementById("gradeInputRow");
+  const confirmBtn    = document.getElementById("confirmGradeBtn");
+  if (hasMcq) {
+    if (gradeInputRow) gradeInputRow.style.display = "none";
+    if (confirmBtn)    confirmBtn.style.display    = "none";
+  } else {
+    if (gradeInputRow) gradeInputRow.style.display = "";
+    if (confirmBtn)    confirmBtn.style.display    = "";
   }
 
   gradeModal?.classList.add("open");
@@ -2360,7 +2377,7 @@ async function renderSubmissions(assignId, assignTitle, maxScore, panelEl, quest
       const gradeBtn = item.querySelector(".grade-open-btn, .re-grade-btn");
       gradeBtn?.addEventListener("click", () =>
         openGradeModal(d.id, s.studentName, s.textAnswer||"", s.fileUrl||"",
-          maxScore, assignTitle, s.studentId, s.mcqAnswers||null, questions||null)
+          maxScore, assignTitle, s.studentId, s.mcqAnswers||null, questions||null, s.grade??null, s.autoGraded||false)
       );
 
       panelEl.appendChild(item);
@@ -2762,10 +2779,11 @@ async function viewTestResults(testId) {
         <div>
           <p style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${s.studentName||"—"}</p>
           <p style="font-size:11px;color:var(--text2)">${s.studentClass||"—"} · ${s.submittedAt?.toDate?.()?.toLocaleString("en-NG",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})||"Recently"}</p>
+          ${s.autoGraded && graded ? `<span style="font-size:10px;color:#4ade80">✅ Auto-graded — you can adjust</span>` : ""}
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span style="font-size:18px;font-weight:800;color:${graded?"var(--accent)":"var(--text2)"}">${graded ? s.score+"/"+t.maxScore : "Not graded"}</span>
-          <button class="action-btn grade-test-sub-btn" data-sub-id="${s.id}" style="font-size:12px;padding:5px 12px">${graded?"✏️ Re-grade":"✏️ Grade"}</button>
+          ${!s.autoGraded ? `<button class="action-btn grade-test-sub-btn" data-sub-id="${s.id}" style="font-size:12px;padding:5px 12px">${graded?"✏️ Adjust":"✏️ Grade"}</button>` : ""}
         </div>`;
       subBlock.appendChild(headerRow);
 
@@ -2810,7 +2828,7 @@ async function viewTestResults(testId) {
       content.appendChild(subBlock);
 
       // Grade button
-      subBlock.querySelector(".grade-test-sub-btn").addEventListener("click", () => {
+      subBlock.querySelector(".grade-test-sub-btn")?.addEventListener("click", () => {
         const current = s.score != null ? s.score : "";
         const input   = prompt(`Score for ${s.studentName} (0–${t.maxScore}):`, current);
         if (input === null) return;
