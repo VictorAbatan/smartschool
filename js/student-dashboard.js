@@ -1111,10 +1111,7 @@ function buildStudentAssignCard(a, now, uid) {
           else allAnswered = false;
         });
         if (!allAnswered) { toast("Please answer all questions before submitting.", "warning"); return; }
-        // Auto-grade
-        let correct = 0;
-        questions.forEach((q, qi) => { if (mcqAnswers[qi] === q.correct) correct++; });
-        mcqScore = Math.round((correct / questions.length) * (a.maxScore || 100));
+        // No auto-grading — teacher will review and grade manually
       } else {
         textVal = card.querySelector(".submit-text-input")?.value.trim() || "";
         fileVal = card.querySelector(".submit-file-input")?.files?.[0] || null;
@@ -1152,8 +1149,7 @@ function buildStudentAssignCard(a, now, uid) {
           term:            a.term || "",
           textAnswer:      textVal,
           mcqAnswers:      mcqAnswers || null,
-          score:           mcqScore,
-          autoGraded:      isMcq,
+          autoGraded:      false,
           fileUrl, fileName,
           submittedAt: serverTimestamp()
         });
@@ -1162,17 +1158,13 @@ function buildStudentAssignCard(a, now, uid) {
           await addDoc(collection(db,"notifications"), {
             userId:    a.teacherId,
             type:      "submission",
-            message:   `📌 ${studentData.name} submitted "${a.title}" (${studentData.studentClass})${mcqScore != null ? ` — Score: ${mcqScore}/${a.maxScore||100}` : ""}`,
+            message:   `📌 ${studentData.name} submitted "${a.title}" (${studentData.studentClass})`,
             read:      false,
             createdAt: serverTimestamp()
           });
         }
 
-        if (isMcq) {
-          toast(`✅ Submitted! Your score: ${mcqScore}/${a.maxScore||100}`, "success", 5000);
-        } else {
-          toast(`✅ "${a.title}" submitted!`, "success");
-        }
+        toast(`✅ "${a.title}" submitted! Your teacher will grade it.`, "success");
         loadAssignments();
       } catch (err) {
         toast("Submission failed: " + err.message, "error");
@@ -1489,32 +1481,21 @@ async function submitTest(auto) {
 
   try {
     const t = activeTestData;
-    // Auto-grade MCQ
-    let score = null;
-    const hasMcq  = t.questions?.every(q => q.type === "mcq" || !q.type);
-    if (hasMcq) {
-      score = 0;
-      t.questions.forEach((q, qi) => {
-        if (testAnswers[qi] === q.correct) score++;
-      });
-      // Scale to maxScore
-      score = Math.round((score / t.questions.length) * t.maxScore);
-    }
 
     await addDoc(collection(db,"testSubmissions"), {
-      testId:      t.id,
-      testTitle:   t.title,
-      studentId:   studentData._uid,
-      studentName: studentData.name,
-      studentClass:studentData.studentClass,
-      school:      studentData.school,
-      subject:     t.subject,
-      term:        t.term,
-      answers:     testAnswers,
-      maxScore:    t.maxScore,
-      score:       score,
-      autoGraded:  hasMcq,
-      submittedAt: serverTimestamp()
+      testId:       t.id,
+      testTitle:    t.title,
+      studentId:    studentData._uid,
+      studentName:  studentData.name,
+      studentClass: studentData.studentClass,
+      school:       studentData.school,
+      subject:      t.subject,
+      term:         t.term,
+      answers:      testAnswers,
+      maxScore:     t.maxScore,
+      score:        null,
+      autoGraded:   false,
+      submittedAt:  serverTimestamp()
     });
 
     // Notify teacher
@@ -1522,7 +1503,7 @@ async function submitTest(auto) {
       await addDoc(collection(db,"notifications"), {
         userId:  t.teacherId,
         type:    "test_submission",
-        message: `📝 ${studentData.name} submitted "${t.title}"${score!=null ? ` — Score: ${score}/${t.maxScore}` : ""}`,
+        message: `📝 ${studentData.name} submitted "${t.title}" — awaiting your grading`,
         read:    false, createdAt: serverTimestamp()
       });
     } catch {}
@@ -1530,11 +1511,7 @@ async function submitTest(auto) {
     testTakeModal?.classList.remove("open");
     activeTestData = null;
 
-    if (hasMcq) {
-      toast(`Test submitted! Your score: ${score}/${t.maxScore}`, "success", 5000);
-    } else {
-      toast("Test submitted! Your teacher will grade it soon.", "success");
-    }
+    toast("Test submitted! Your teacher will grade it soon.", "success");
     loadStudentTests();
     loadCompletedTests();
   } catch(err) {

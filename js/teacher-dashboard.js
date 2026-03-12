@@ -2175,7 +2175,7 @@ function buildAssignCard(a) {
     const panel = card.querySelector(".subs-panel");
     panel.style.display = "block";
     panel.innerHTML = `<p style="font-size:13px;color:var(--text2)">Loading...</p>`;
-    await renderSubmissions(a.id, a.title, a.maxScore||100, panel);
+    await renderSubmissions(a.id, a.title, a.maxScore||100, panel, a.questions||null);
   });
   card.querySelector(".close-btn")?.addEventListener("click", async e => {
     e.stopPropagation();
@@ -2212,18 +2212,20 @@ function buildAssignCard(a) {
 const gradeModal = document.getElementById("gradeModal");
 let gradingSubId = null, gradingMaxScore = 100, gradingStudentId = null, gradingTitle = "";
 
-function openGradeModal(subId, studentName, textAnswer, fileUrl, maxScore, assignTitle, studentId) {
+function openGradeModal(subId, studentName, textAnswer, fileUrl, maxScore, assignTitle, studentId, mcqAnswers, questions) {
   gradingSubId      = subId;
   gradingMaxScore   = maxScore;
   gradingStudentId  = studentId;
   gradingTitle      = assignTitle;
 
-  const titleEl = document.getElementById("gradeModalTitle");
-  const infoEl  = document.getElementById("gradeStudentInfo");
-  const textEl  = document.getElementById("gradeTextAnswer");
-  const contentEl = document.getElementById("gradeAnswerContent");
-  const fileEl  = document.getElementById("gradeFileAnswer");
-  const fileLnk = document.getElementById("gradeFileLink");
+  const titleEl    = document.getElementById("gradeModalTitle");
+  const infoEl     = document.getElementById("gradeStudentInfo");
+  const textEl     = document.getElementById("gradeTextAnswer");
+  const contentEl  = document.getElementById("gradeAnswerContent");
+  const fileEl     = document.getElementById("gradeFileAnswer");
+  const fileLnk    = document.getElementById("gradeFileLink");
+  const mcqEl      = document.getElementById("gradeMcqAnswers");
+  const mcqContent = document.getElementById("gradeMcqContent");
   const scoreLabel = document.getElementById("gradeScoreLabel");
   const scoreInput = document.getElementById("gradeScoreInput");
   const remarkInput = document.getElementById("gradeRemarkInput");
@@ -2236,23 +2238,50 @@ function openGradeModal(subId, studentName, textAnswer, fileUrl, maxScore, assig
   if (remarkInput) remarkInput.value = "";
   if (statusEl)  { statusEl.style.display = "none"; statusEl.textContent = ""; }
 
-  // Show text answer if present
+  // MCQ answers
+  const hasMcq = mcqAnswers && questions && questions.length > 0;
+  if (hasMcq && mcqEl && mcqContent) {
+    mcqEl.style.display = "block";
+    mcqContent.innerHTML = questions.map((q, qi) => {
+      const studentPick = mcqAnswers[qi] ?? mcqAnswers[String(qi)];
+      const correct     = q.correct;
+      const opts        = (q.options || []).filter(o => o.trim());
+      return `<div style="background:var(--bg3);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+        <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Q${qi+1}. ${q.question}</p>
+        ${opts.map((opt, oi) => {
+          const isChosen  = studentPick === oi;
+          const isCorrect = correct === oi;
+          let bg = "var(--bg2)", border = "var(--card-border)", icon = "";
+          if (isChosen && isCorrect)  { bg = "rgba(74,222,128,.12)"; border = "#4ade80"; icon = " ✅"; }
+          else if (isChosen)          { bg = "rgba(239,68,68,.12)";  border = "#ef4444"; icon = " ❌"; }
+          else if (isCorrect)         { bg = "rgba(74,222,128,.07)"; border = "#4ade80"; icon = " ✔ (correct)"; }
+          return `<div style="padding:7px 12px;background:${bg};border:1px solid ${border};border-radius:8px;margin-bottom:5px;font-size:12px;color:var(--text)">
+            ${isChosen ? "▶ " : ""}${opt}${icon}
+          </div>`;
+        }).join("")}
+      </div>`;
+    }).join("");
+  } else {
+    if (mcqEl) mcqEl.style.display = "none";
+  }
+
+  // Text answer
   if (textAnswer && textAnswer.trim()) {
-    if (textEl)     textEl.style.display     = "block";
-    if (contentEl)  contentEl.textContent    = textAnswer.trim();
+    if (textEl)    textEl.style.display  = "block";
+    if (contentEl) contentEl.textContent = textAnswer.trim();
   } else {
-    if (textEl)     textEl.style.display     = "none";
+    if (textEl) textEl.style.display = "none";
   }
 
-  // Show file link if present
+  // File link
   if (fileUrl) {
-    if (fileEl)  fileEl.style.display  = "block";
-    if (fileLnk) fileLnk.href          = fileUrl;
+    if (fileEl)  fileEl.style.display = "block";
+    if (fileLnk) fileLnk.href         = fileUrl;
   } else {
-    if (fileEl)  fileEl.style.display  = "none";
+    if (fileEl) fileEl.style.display = "none";
   }
 
-  if (!textAnswer?.trim() && !fileUrl) {
+  if (!hasMcq && !textAnswer?.trim() && !fileUrl) {
     if (infoEl) infoEl.innerHTML = infoEl.textContent +
       `<br><span style="color:#fb923c;font-size:12px">⚠️ This student did not submit any content.</span>`;
   }
@@ -2299,7 +2328,7 @@ document.getElementById("confirmGradeBtn")?.addEventListener("click", async () =
   } finally { btn.textContent = "✅ Save Grade & Notify Student"; btn.disabled = false; }
 });
 
-async function renderSubmissions(assignId, assignTitle, maxScore, panelEl) {
+async function renderSubmissions(assignId, assignTitle, maxScore, panelEl, questions) {
   try {
     const snap = await getDocs(query(collection(db,"assignmentSubmissions"),
       where("assignmentId","==",assignId)));
@@ -2310,27 +2339,28 @@ async function renderSubmissions(assignId, assignTitle, maxScore, panelEl) {
     snap.forEach(d => {
       const s   = d.data();
       const graded = s.grade !== undefined && s.grade !== null;
+      const isMcqSub = s.assignType === "mcq" || (s.mcqAnswers && Object.keys(s.mcqAnswers).length > 0);
       const item = document.createElement("div");
       item.style.cssText = "background:var(--bg3);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap";
       item.innerHTML = `
         <div style="flex:1;min-width:0">
           <p style="font-size:13px;font-weight:700;margin-bottom:2px">${s.studentName}</p>
           <p style="font-size:11px;color:var(--text2)">${s.submittedAt?.toDate?.()?.toLocaleDateString("en-NG")||"Recently"}</p>
+          ${isMcqSub ? `<span style="font-size:10px;font-weight:700;color:#818cf8;background:rgba(99,102,241,.15);padding:2px 7px;border-radius:10px;margin-top:3px;display:inline-block">🔘 MCQ — click Grade to review answers</span>` : ""}
           ${s.textAnswer ? `<p style="font-size:12px;color:var(--text2);margin-top:4px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${s.textAnswer.slice(0,80)}${s.textAnswer.length>80?"...":""}"</p>` : ""}
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0">
           ${s.fileUrl ? `<a href="${s.fileUrl}" target="_blank" class="view-submission-btn">📎 File</a>` : ""}
           ${graded
-            ? `<span class="sub-status submitted" style="font-size:11px">✅ ${s.grade}/${maxScore}${s.remark?` — "${s.remark}"`:""}</span>
+            ? `<span class="sub-status submitted" style="font-size:11px">✅ ${s.grade}/${maxScore}${s.remark?` — "${s.remark}"`:""}${s.autoGraded?" (auto)":""}</span>
                <button class="action-btn re-grade-btn" style="font-size:12px;padding:5px 12px" data-sub-id="${d.id}">✏️ Re-grade</button>`
             : `<button class="action-btn grade-open-btn" style="font-size:12px;padding:5px 12px" data-sub-id="${d.id}">✏️ Grade</button>`}
         </div>`;
 
-      // Grade button — opens grade modal with student's answer
       const gradeBtn = item.querySelector(".grade-open-btn, .re-grade-btn");
       gradeBtn?.addEventListener("click", () =>
         openGradeModal(d.id, s.studentName, s.textAnswer||"", s.fileUrl||"",
-          maxScore, assignTitle, s.studentId)
+          maxScore, assignTitle, s.studentId, s.mcqAnswers||null, questions||null)
       );
 
       panelEl.appendChild(item);
@@ -2352,7 +2382,7 @@ async function loadAllSubmissions() {
       const sec  = document.createElement("div"); sec.style.marginBottom = "20px";
       sec.innerHTML = `<p style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📌 ${a.title}</p>`;
       const panel = document.createElement("div"); sec.appendChild(panel);
-      await renderSubmissions(d.id, a.title, a.maxScore||100, panel);
+      await renderSubmissions(d.id, a.title, a.maxScore||100, panel, a.questions||null);
       container.appendChild(sec);
     }
   } catch (err) { container.innerHTML = `<p class="empty-msg">Error: ${err.message}</p>`; }
@@ -2714,30 +2744,99 @@ async function viewTestResults(testId) {
     const t = testSnap.data();
     const h = document.getElementById("testResultsTitle"); if (h) h.textContent=t.title;
     const subs = subsSnap.docs.map(d=>({id:d.id,...d.data()}));
-    subs.sort((a,b)=>(b.score||0)-(a.score||0));
+    subs.sort((a,b)=>(b.submittedAt?.toMillis?.()||0)-(a.submittedAt?.toMillis?.()||0));
     if (!content) return;
     if (subs.length===0) { content.innerHTML=`<p class="empty-msg">No submissions yet.</p>`; return; }
-    const hasMcq = t.questions?.some(q=>q.type==="mcq");
-    content.innerHTML=`
-      <p style="font-size:12px;color:var(--text2);margin-bottom:14px">${subs.length} submission(s) · Max score: ${t.maxScore}</p>
-      <table class="rp-table">
-        <thead><tr><th>#</th><th>Student</th><th>Class</th><th>Score</th><th>Time</th>${hasMcq?"":"<th>Review</th>"}</tr></thead>
-        <tbody>
-          ${subs.map((s,i)=>`
-            <tr>
-              <td>${i+1}</td>
-              <td style="font-weight:600">${s.studentName||"—"}</td>
-              <td>${s.studentClass||"—"}</td>
-              <td style="color:var(--accent);font-weight:700">${s.score!=null?s.score+"/"+ t.maxScore:"Pending"}</td>
-              <td style="font-size:11px">${s.submittedAt?.toDate?.()?.toLocaleString("en-NG",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})||"—"}</td>
-              ${hasMcq?"":"<td><button class='action-btn' style='padding:4px 10px;font-size:11px' onclick='gradeTestSub(\""+s.id+"\",\""+testId+"\","+t.maxScore+")'>Grade</button></td>"}
-            </tr>`).join("")}
-        </tbody>
-      </table>`;
+
+    content.innerHTML=`<p style="font-size:12px;color:var(--text2);margin-bottom:16px">${subs.length} submission(s) · Max score: ${t.maxScore}</p>`;
+
+    subs.forEach((s, i) => {
+      const graded = s.score != null;
+      const subBlock = document.createElement("div");
+      subBlock.style.cssText = "background:var(--bg3);border:1px solid var(--card-border);border-radius:12px;padding:14px 16px;margin-bottom:14px";
+
+      // Header row
+      const headerRow = document.createElement("div");
+      headerRow.style.cssText = "display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px";
+      headerRow.innerHTML = `
+        <div>
+          <p style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${s.studentName||"—"}</p>
+          <p style="font-size:11px;color:var(--text2)">${s.studentClass||"—"} · ${s.submittedAt?.toDate?.()?.toLocaleString("en-NG",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})||"Recently"}</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:18px;font-weight:800;color:${graded?"var(--accent)":"var(--text2)"}">${graded ? s.score+"/"+t.maxScore : "Not graded"}</span>
+          <button class="action-btn grade-test-sub-btn" data-sub-id="${s.id}" style="font-size:12px;padding:5px 12px">${graded?"✏️ Re-grade":"✏️ Grade"}</button>
+        </div>`;
+      subBlock.appendChild(headerRow);
+
+      // MCQ answers review
+      if (t.questions && t.questions.length > 0 && s.answers) {
+        const answersDiv = document.createElement("div");
+        t.questions.forEach((q, qi) => {
+          const studentPick = s.answers[qi] ?? s.answers[String(qi)];
+          const correct     = q.correct;
+          const opts        = (q.options||[]).filter(o=>o.trim());
+          const isAnswered  = studentPick !== undefined && studentPick !== null;
+          const qDiv = document.createElement("div");
+          qDiv.style.cssText = "margin-bottom:10px";
+          qDiv.innerHTML = `<p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">Q${qi+1}. ${q.question}</p>`;
+          if (opts.length > 0) {
+            // MCQ options
+            opts.forEach((opt, oi) => {
+              const isChosen  = studentPick === oi;
+              const isCorrect = correct === oi;
+              let bg = "var(--bg2)", border = "var(--card-border)", icon = "";
+              if (isChosen && isCorrect)  { bg="rgba(74,222,128,.12)"; border="#4ade80"; icon=" ✅"; }
+              else if (isChosen)          { bg="rgba(239,68,68,.12)";  border="#ef4444"; icon=" ❌"; }
+              else if (isCorrect)         { bg="rgba(74,222,128,.07)"; border="#4ade80"; icon=" ✔ (correct)"; }
+              const optEl = document.createElement("div");
+              optEl.style.cssText = `padding:5px 10px;background:${bg};border:1px solid ${border};border-radius:7px;margin-bottom:4px;font-size:12px;color:var(--text)`;
+              optEl.textContent = `${isChosen?"▶ ":""}${opt}${icon}`;
+              qDiv.appendChild(optEl);
+            });
+          } else {
+            // Theory answer
+            const ans = s.answers[qi] || s.answers[String(qi)] || "";
+            const ansEl = document.createElement("div");
+            ansEl.style.cssText = "background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:8px 12px;font-size:12px;color:var(--text);white-space:pre-wrap";
+            ansEl.textContent = ans || "(No answer provided)";
+            qDiv.appendChild(ansEl);
+          }
+          answersDiv.appendChild(qDiv);
+        });
+        subBlock.appendChild(answersDiv);
+      }
+
+      content.appendChild(subBlock);
+
+      // Grade button
+      subBlock.querySelector(".grade-test-sub-btn").addEventListener("click", () => {
+        const current = s.score != null ? s.score : "";
+        const input   = prompt(`Score for ${s.studentName} (0–${t.maxScore}):`, current);
+        if (input === null) return;
+        const n = parseFloat(input);
+        if (isNaN(n)||n<0||n>t.maxScore) { toast("Invalid score.","warning"); return; }
+        updateDoc(doc(db,"testSubmissions",s.id), { score:n, gradedAt:serverTimestamp() })
+          .then(async () => {
+            // Notify student
+            try {
+              await addDoc(collection(db,"notifications"), {
+                userId:  s.studentId,
+                type:    "grade",
+                message: `🏆 Your test "${t.title}" was graded: ${n}/${t.maxScore}`,
+                read:    false, createdAt: serverTimestamp()
+              });
+            } catch {}
+            toast("Score saved!", "success");
+            viewTestResults(testId);
+          })
+          .catch(err => toast("Failed: "+err.message, "error"));
+      });
+    });
   } catch(err) { if (content) content.innerHTML=`<p class="empty-msg">Error: ${err.message}</p>`; }
 }
 
-/* ── Grade a theory test submission ── */
+/* ── Grade a theory test submission (legacy inline call — kept for safety) ── */
 window.gradeTestSub = async function(subId, testId, maxScore) {
   const score = prompt(`Enter score (0–${maxScore}):`);
   if (score === null) return;
